@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set active = 'library' %}
+{% block title %}{{ 'تعديل كتاب' if item else 'إضافة كتاب جديد' }} – مركز الدليل{% endblock %}
+{% block desc %}لوحة النشر: إضافة أو تعديل كتاب في المكتبة الرقمية.{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container"><h1>{{ 'تعديل كتاب' if item else 'إضافة كتاب جديد' }}</h1></div>
+  </section>
+
+  <main class="admin-wrap">
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, msg in messages %}
+          <div class="flash flash-{{ category }}" role="alert">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+      <form class="book-form" action="{{ action or url_for('book_create') }}" method="post" enctype="multipart/form-data">
+        <p class="form-note">الحقول المعلَّمة بـ <span class="req">*</span> إلزامية.</p>
+
+        <label class="field">
+          <span class="field-label">عنوان الكتاب <span class="req">*</span></span>
+          <input type="text" name="title" required maxlength="200" value="{{ item.title if item else '' }}" placeholder="مثال: تقييم المشروعات الإنسانية" />
+        </label>
+
+        <label class="field">
+          <span class="field-label">صورة الغلاف {% if not item %}<span class="req">*</span>{% endif %}</span>
+          {% if item and item.cover %}<img class="current-thumb" src="{{ url_for('static', filename=item.cover) }}" alt="الغلاف الحالي" />{% endif %}
+          <input type="file" name="cover" accept="image/*" {% if not item %}required{% endif %} />
+          <span class="field-hint">{% if item %}اترك الحقل فارغًا للإبقاء على الصورة الحالية. {% endif %}صيغ مقبولة: PNG, JPG, WEBP, GIF</span>
+        </label>
+
+        <label class="field">
+          <span class="field-label">نبذة عن الكتاب</span>
+          <textarea name="description" rows="4" maxlength="600" placeholder="وصف مختصر يظهر أسفل العنوان (اختياري)">{{ item.description if item else '' }}</textarea>
+        </label>
+
+        <label class="field">
+          <span class="field-label">ملف الكتاب للتحميل</span>
+          {% if item and item.file %}<span class="current-file">الملف الحالي مرفق ✓</span>{% endif %}
+          <input type="file" name="file" accept=".pdf,.doc,.docx" />
+          <span class="field-hint">{% if item %}اترك الحقل فارغًا للإبقاء على الملف الحالي. {% endif %}صيغ: PDF, DOC, DOCX</span>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-publish">{{ 'حفظ التعديلات' if item else 'نشر الكتاب' }}</button>
+          <a href="{{ url_for('library') }}#booklets" class="btn-cancel">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </main>
+{% endblock %}

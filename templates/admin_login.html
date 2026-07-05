@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}دخول المشرف – مركز الدليل{% endblock %}
+{% block desc %}تسجيل دخول المشرف لإدارة محتوى الموقع.{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container"><h1>دخول المشرف</h1></div>
+  </section>
+
+  <main class="admin-wrap">
+    <div class="container">
+      <form class="book-form login-form" action="{{ url_for('admin_login') }}" method="post">
+        <input type="hidden" name="next" value="{{ next }}" />
+        <p class="form-note">هذه المنطقة مخصّصة للمشرف فقط. أدخل كلمة المرور للمتابعة.</p>
+
+        {% if error %}<div class="flash flash-error" role="alert">{{ error }}</div>{% endif %}
+
+        <label class="field">
+          <span class="field-label">كلمة المرور</span>
+          <input type="password" name="password" required autofocus autocomplete="current-password"
+                 placeholder="••••••••" />
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-publish">تسجيل الدخول</button>
+          <a href="{{ url_for('library') }}" class="btn-cancel">رجوع</a>
+        </div>
+      </form>
+    </div>
+  </main>
+{% endblock %}

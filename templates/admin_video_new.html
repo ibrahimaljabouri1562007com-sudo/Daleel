@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% set active = 'library' %}
+{% block title %}{{ 'تعديل فيديو' if item else 'نشر فيديو جديد' }} – مركز الدليل{% endblock %}
+{% block desc %}لوحة النشر: إضافة أو تعديل فيديو في المكتبة الرقمية.{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container"><h1>{{ 'تعديل فيديو' if item else 'نشر فيديو جديد' }}</h1></div>
+  </section>
+
+  <main class="admin-wrap">
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, msg in messages %}
+          <div class="flash flash-{{ category }}" role="alert">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+      <form class="book-form" action="{{ action or url_for('video_create') }}" method="post" enctype="multipart/form-data" {% if not item %}data-need-source{% endif %}>
+        <p class="form-note">الحقول المعلَّمة بـ <span class="req">*</span> إلزامية.{% if not item %} أدخل <strong>رابط فيديو</strong> أو <strong>ارفع ملفًا</strong> (أحدهما مطلوب).{% endif %}</p>
+
+        <label class="field">
+          <span class="field-label">عنوان الفيديو <span class="req">*</span></span>
+          <input type="text" name="title" required maxlength="200" value="{{ item.title if item else '' }}" placeholder="مثال: صياغة الأوامر الذكية باستخدام ChatGPT" />
+        </label>
+
+        {% if item and item.src %}
+        <div class="field">
+          <span class="field-label">الفيديو الحالي</span>
+          {% set emb = (item.src|embed) if item.src_type == 'url' else None %}
+          {% if emb %}
+            <div class="video-frame current-vid"><iframe src="{{ emb }}" title="الفيديو الحالي" allowfullscreen loading="lazy"></iframe></div>
+          {% else %}
+            <video class="current-vid" controls preload="metadata" src="{{ item.src if item.src_type == 'url' else url_for('static', filename=item.src) }}"></video>
+          {% endif %}
+          <label class="remove-check"><input type="checkbox" name="remove_video" value="1" /> احذف الفيديو الحالي</label>
+          <span class="field-hint">هذا هو الفيديو الحالي. لتغييره أدخل رابطًا جديدًا أو ارفع ملفًا أدناه، أو حدّد «احذف» لإزالته، أو اتركه كما هو.</span>
+        </div>
+        {% endif %}
+
+        <label class="field">
+          <span class="field-label">رابط الفيديو</span>
+          <input type="url" name="url" value="{{ item.src if item and item.src_type == 'url' else '' }}" placeholder="رابط YouTube / Vimeo أو رابط مباشر لملف mp4" />
+          <span class="field-hint">روابط YouTube/Vimeo تُعرض داخل الصفحة مباشرةً دون الانتقال إلى موقعها.</span>
+        </label>
+
+        <label class="field">
+          <span class="field-label">أو رفع ملف الفيديو</span>
+          <input type="file" name="video" accept=".mp4,.webm,.ogg,.mov,.m4v" />
+          <span class="field-hint">{% if item %}اتركه فارغًا للإبقاء على المصدر الحالي. {% endif %}صيغ مقبولة: MP4, WEBM, OGG, MOV, M4V</span>
+        </label>
+
+        <div class="field">
+          <span class="field-label">صورة مصغّرة (بوستر)</span>
+          {% if item and item.poster %}
+            <img class="current-thumb" src="{{ url_for('static', filename=item.poster) }}" alt="الغلاف الحالي" />
+            <label class="remove-check"><input type="checkbox" name="remove_poster" value="1" /> احذف الصورة الحالية</label>
+          {% endif %}
+          <input type="file" name="poster" accept="image/*" />
+          <span class="field-hint">{% if item %}لتغييرها ارفع صورة جديدة، أو حدّد «احذف» لإزالتها، أو اتركها كما هي. {% endif %}تظهر كصورة قابلة للنقر قبل تشغيل الفيديو.</span>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-publish">{{ 'حفظ التعديلات' if item else 'نشر الفيديو' }}</button>
+          <a href="{{ url_for('library') }}#videos" class="btn-cancel">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </main>
+{% endblock %}

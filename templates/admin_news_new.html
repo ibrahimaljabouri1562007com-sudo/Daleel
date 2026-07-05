@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% set active = 'home' %}
+{% block title %}{{ 'تعديل خبر' if item else 'نشر خبر جديد' }} – مركز الدليل{% endblock %}
+{% block desc %}لوحة النشر: إضافة أو تعديل خبر في قسم «جديدنا».{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container"><h1>{{ 'تعديل خبر' if item else 'نشر خبر جديد' }}</h1></div>
+  </section>
+
+  <main class="admin-wrap">
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, msg in messages %}
+          <div class="flash flash-{{ category }}" role="alert">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+      <form class="book-form" action="{{ action or url_for('news_create') }}" method="post" enctype="multipart/form-data">
+        <p class="form-note">الحقول المعلَّمة بـ <span class="req">*</span> إلزامية. الصورة والفيديو والنص اختيارية.</p>
+
+        <label class="field">
+          <span class="field-label">عنوان الخبر <span class="req">*</span></span>
+          <input type="text" name="title" required maxlength="240" value="{{ item.title if item else '' }}" placeholder="مثال: انطلاق دورة إدارة المشاريع الإنسانية" />
+        </label>
+
+        <div class="field">
+          <span class="field-label">صورة الغلاف</span>
+          {% if item and item.image %}
+            <img class="current-thumb" src="{{ url_for('static', filename=item.image) }}" alt="الصورة الحالية" />
+            <label class="remove-check"><input type="checkbox" name="remove_image" value="1" /> احذف الصورة الحالية</label>
+          {% endif %}
+          <input type="file" name="image" accept="image/*" />
+          <span class="field-hint">{% if item %}لتغييرها ارفع صورة جديدة، أو حدّد «احذف» لإزالتها، أو اتركها كما هي. {% endif %}صيغ: PNG, JPG, WEBP, GIF</span>
+        </div>
+
+        {% if item and item.src %}
+        <div class="field">
+          <span class="field-label">الفيديو الحالي</span>
+          {% set emb = (item.src|embed) if item.src_type == 'url' else None %}
+          {% if emb %}
+            <div class="video-frame current-vid"><iframe src="{{ emb }}" title="الفيديو الحالي" allowfullscreen loading="lazy"></iframe></div>
+          {% else %}
+            <video class="current-vid" controls preload="metadata" src="{{ item.src if item.src_type == 'url' else url_for('static', filename=item.src) }}"></video>
+          {% endif %}
+          <label class="remove-check"><input type="checkbox" name="remove_video" value="1" /> احذف الفيديو الحالي</label>
+          <span class="field-hint">هذا هو الفيديو الحالي. لتغييره أدخل رابطًا جديدًا أو ارفع ملفًا أدناه، أو حدّد «احذف» لإزالته، أو اتركه كما هو.</span>
+        </div>
+        {% endif %}
+
+        <label class="field">
+          <span class="field-label">رابط فيديو (اختياري)</span>
+          <input type="url" name="url" value="{{ item.src if item and item.src_type == 'url' else '' }}" placeholder="رابط YouTube / Vimeo أو رابط مباشر" />
+          <span class="field-hint">يُعرض داخل الصفحة مباشرةً.</span>
+        </label>
+
+        <label class="field">
+          <span class="field-label">أو رفع ملف فيديو</span>
+          <input type="file" name="video" accept=".mp4,.webm,.ogg,.mov,.m4v" />
+          <span class="field-hint">صيغ: MP4, WEBM, OGG, MOV, M4V</span>
+        </label>
+
+        <div class="field">
+          <span class="field-label">نص الخبر</span>
+          <div class="fmt-toolbar" role="toolbar" aria-label="أدوات التنسيق" data-target="articleBody">
+            <button type="button" class="fmt-btn" data-fmt="h" title="عنوان فرعي"><span class="fmt-ic">H</span> عنوان</button>
+            <button type="button" class="fmt-btn" data-fmt="bold" title="نص عريض"><span class="fmt-ic" style="font-weight:900">B</span> عريض</button>
+            <button type="button" class="fmt-btn" data-fmt="hl" title="تمييز بالأصفر"><span class="fmt-ic fmt-hl">A</span> تمييز</button>
+            <button type="button" class="fmt-btn" data-fmt="quote" title="اقتباس"><span class="fmt-ic">❝</span> اقتباس</button>
+            <button type="button" class="fmt-btn" data-fmt="list" title="عنصر قائمة"><span class="fmt-ic">•</span> قائمة</button>
+          </div>
+          <textarea id="articleBody" name="body" rows="8" placeholder="اكتب نص الخبر هنا… (اختياري)">{{ item.body if item else '' }}</textarea>
+          <span class="field-hint">حدّد النص ثم اضغط زر التنسيق، أو اكتب: <b>**عريض**</b> · <mark class="hl">==تمييز==</mark> · «### عنوان» · «&gt; اقتباس» · «- قائمة».</span>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-publish">{{ 'حفظ التعديلات' if item else 'نشر الخبر' }}</button>
+          <a href="{{ url_for('home') }}#news" class="btn-cancel">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </main>
+{% endblock %}

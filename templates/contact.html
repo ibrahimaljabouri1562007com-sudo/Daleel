@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% set active = 'contact' %}
+{% block title %}اتصل بنا – مركز الدليل{% endblock %}
+{% block desc %}تواصل مع مركز الدليل للتدريب والاستشارات الإنسانية.{% endblock %}
+
+{% block content %}
+  <!-- ===== Page hero ===== -->
+  <section class="page-hero">
+    <div class="container"><h1>اتصل بنا</h1></div>
+  </section>
+
+  <!-- ===== Contact ===== -->
+  <main class="contact-wrap">
+    <div class="container">
+      <div class="section-head">
+        <h2 class="section-title">اتصل بنا، نحن هنا لمساعدتك</h2>
+      </div>
+      <div class="cc-grid">
+        <div class="cc-card">
+          <div class="cc-ic">📞</div>
+          <h3>الهاتف</h3>
+          <p dir="ltr">‎+9647874935409</p>
+        </div>
+        <div class="cc-card">
+          <div class="cc-ic">✉</div>
+          <h3>البريد الإلكتروني</h3>
+          <p><a class="cv-link" href="mailto:info@daleelconsult.org?subject=استفسار%20عبر%20الموقع">info@daleelconsult.org</a></p>
+          <button type="button" class="copy-btn" data-copy="info@daleelconsult.org" aria-label="نسخ البريد الإلكتروني">نسخ البريد</button>
+        </div>
+        <div class="cc-card">
+          <div class="cc-ic">📍</div>
+          <h3>موقعنا</h3>
+          <p>بغداد، القادسية، قرب جامع القادسية</p>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

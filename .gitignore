@@ -1,0 +1,17 @@
+# generated / local — never commit these
+__pycache__/
+*.pyc
+daleel.db
+static/uploads/*
+!static/uploads/.gitkeep
+flask.log
+enc_result.txt
+
+# local-only backups/reference (not needed to run the app)
+_archive_phase1_static/
+_reference/
+# editor/OS junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
