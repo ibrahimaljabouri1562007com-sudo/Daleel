@@ -965,6 +965,11 @@ def news_delete(news_id):
     return redirect(url_for("home") + "#news")
 
 
+# Ensure the database + all tables exist however the app is launched
+# (python app.py, flask run, gunicorn, a fresh download, etc.).
+# Safe to run every time: CREATE TABLE IF NOT EXISTS + seed-only-if-empty.
+init_db()
+
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True, port=5000)
