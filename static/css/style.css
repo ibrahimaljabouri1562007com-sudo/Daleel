@@ -13,6 +13,7 @@
   --gold-600:#a87f2e;
   --bg:#ffffff;
   --bg-alt:#F5F5F5;
+  --section-tint:#F5F6F2;   /* faint warm-green band for alternating sections */
   --line:#DDDDDD;
   --radius:12px;
   --shadow:0 12px 30px rgba(33,52,48,.10);
@@ -44,11 +45,11 @@ img{max-width:100%;display:block}
 /* ---------- Header ---------- */
 .site-header{position:sticky;top:0;z-index:50;background:#fff;box-shadow:0 2px 14px rgba(33,52,48,.06);transition:box-shadow .25s}
 .site-header.scrolled{box-shadow:0 6px 22px rgba(33,52,48,.12)}
-.header-inner{display:flex;align-items:center;justify-content:space-between;height:96px;gap:16px}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:96px;gap:26px}
 .brand{display:flex;align-items:center;flex-shrink:0}
 .logo-img{height:90px;width:auto}
 
-.main-nav{display:flex;align-items:center;gap:2px;flex-wrap:nowrap;justify-content:flex-end;position:relative}
+.main-nav{display:flex;align-items:center;gap:2px;flex-wrap:nowrap;flex:1;justify-content:flex-start;position:relative}
 .main-nav>a,.main-nav .dd-top{padding:36px 11px;font-weight:600;font-size:14.5px;color:var(--ink);transition:color .2s;white-space:nowrap;position:relative;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
 .main-nav>a:hover,.main-nav .dd-top:hover{color:var(--green-900)}
 .main-nav a.active{color:var(--green-900)}
@@ -83,6 +84,9 @@ img{max-width:100%;display:block}
 
 /* ---------- Sections ---------- */
 .section{padding:60px 0}
+/* alternating tint bands: separation by color, not just whitespace.
+   :not(.section-dark) keeps the partners dark band as its own accent. */
+.section:nth-of-type(even):not(.section-dark){background:var(--section-tint)}
 .section-alt{background:var(--bg-alt)}
 .section-dark{background:var(--green-900);color:#fff;border-top:5px solid var(--gold);border-bottom:5px solid var(--gold)}
 .section-head{text-align:center;max-width:820px;margin:0 auto 36px}
