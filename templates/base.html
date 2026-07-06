@@ -55,7 +55,6 @@
           </div>
         </div>
         <a href="{{ url_for('home') }}#team">مدير المركز</a>
-        <a class="disabled" aria-disabled="true" tabindex="-1">المقالات</a>
         <div class="nav-dd">
           <a href="{{ url_for('library') }}" class="dd-top{% if active == 'library' %} active{% endif %}">مكتبتنا الرقمية <span class="plus">+</span></a>
           <div class="dd-panel">
@@ -65,7 +64,6 @@
             <a href="{{ url_for('library') }}#tools">أدوات ونماذج</a>
           </div>
         </div>
-        <a class="disabled" aria-disabled="true" tabindex="-1">تحدث معنا</a>
         <a href="{{ url_for('contact') }}"{% if active == 'contact' %} class="active"{% endif %}>اتصل بنا</a>
       </nav>
     </div>
@@ -81,41 +79,6 @@
         <div class="fc-item"><span class="fc-ic">📞</span><div><strong>اتصل بنا</strong><p>‎+9647874935409</p></div></div>
         <div class="fc-item"><span class="fc-ic">✉</span><div><strong>بريد إلكتروني</strong><p><a class="fc-link" href="mailto:info@daleelconsult.org?subject=استفسار%20عبر%20الموقع">info@daleelconsult.org</a></p></div></div>
         <div class="fc-item"><span class="fc-ic">📍</span><div><strong>موقعنا</strong><p>بغداد، القادسية، قرب جامع القادسية</p></div></div>
-      </div>
-      <div class="footer-col">
-        <h4>روابط سريعة</h4>
-        <nav class="footer-links">
-          <a href="{{ url_for('home') }}"{% if active == 'home' %} class="active"{% endif %}>الصفحة الرئيسية</a>
-          <a class="disabled">تحدث معنا</a>
-          <a href="{{ hp }}#about">لماذا الدليل ؟</a>
-          <div class="fl-group">
-            <a href="{{ hp }}#about">من نحن</a>
-            <div class="fl-sub">
-              <a href="{{ hp }}#focus">أهدافنا</a>
-              <a href="{{ hp }}#values">قيمنا</a>
-              <a href="{{ hp }}#partners">لمن نعمل ؟</a>
-              <a href="{{ hp }}#services">ماذا نقدّم؟</a>
-            </div>
-          </div>
-          <div class="fl-group">
-            <a href="{{ hp }}#programs">البرامج</a>
-            <div class="fl-sub">
-              <a href="{{ hp }}#courses">الدورات</a>
-            </div>
-          </div>
-          <a class="disabled">المقالات</a>
-          <a href="{{ url_for('home') }}#team">مدير المركز</a>
-          <div class="fl-group">
-            <a href="{{ url_for('library') }}" class="fl-parent{% if active == 'library' %} active{% endif %}">مكتبتنا الرقمية</a>
-            <div class="fl-sub">
-              <a href="{{ url_for('library') }}#videos">فيديوهات تعليمية</a>
-              <a href="{{ url_for('library') }}#articles">مقالات تعليمية</a>
-              <a href="{{ url_for('library') }}#booklets">كتيبات عملية</a>
-              <a href="{{ url_for('library') }}#tools">أدوات ونماذج</a>
-            </div>
-          </div>
-          <a href="{{ url_for('contact') }}"{% if active == 'contact' %} class="active"{% endif %}>اتصل بنا</a>
-        </nav>
       </div>
       <div class="footer-col">
         <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="مركز الدليل" class="footer-logo" />

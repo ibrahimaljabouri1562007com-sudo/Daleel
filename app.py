@@ -14,7 +14,9 @@ import os
 import re
 import html
 import uuid
+import smtplib
 import sqlite3
+from email.message import EmailMessage
 from functools import wraps
 from datetime import datetime
 from markupsafe import Markup
@@ -298,6 +300,20 @@ def init_db():
             ),
         )
 
+    # ---- contact messages (from the اتصل بنا on-page form) ----
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS messages (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            name       TEXT NOT NULL,
+            email      TEXT NOT NULL,
+            subject    TEXT,
+            body       TEXT NOT NULL,
+            created_at TEXT
+        )
+        """
+    )
+
     conn.commit()
     conn.close()
 
@@ -439,8 +455,75 @@ def library():
     )
 
 
-@app.route("/contact")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def send_contact_email(name, email, subject, body):
+    """Best-effort: forward a contact-form message to the center's inbox via SMTP.
+    Credentials come ONLY from env vars (see DEPLOY.md) — never hardcoded. If SMTP
+    is not configured, returns False and the message still lives safely in the DB."""
+    server = os.environ.get("MAIL_SERVER")
+    user = os.environ.get("MAIL_USERNAME")
+    password = os.environ.get("MAIL_PASSWORD")
+    if not (server and user and password):
+        return False  # not configured -> the DB copy is the record
+    port = int(os.environ.get("MAIL_PORT", "465"))
+    mail_to = os.environ.get("MAIL_TO", "info@daleelconsult.org")
+    msg = EmailMessage()
+    msg["Subject"] = "[موقع الدليل] " + (subject or "رسالة جديدة")
+    msg["From"] = user
+    msg["To"] = mail_to
+    msg["Reply-To"] = email
+    msg.set_content(
+        "الاسم: %s\nالبريد: %s\nالموضوع: %s\n\n%s"
+        % (name, email, subject or "-", body)
+    )
+    try:
+        if port == 465:
+            with smtplib.SMTP_SSL(server, port, timeout=10) as s:
+                s.login(user, password)
+                s.send_message(msg)
+        else:
+            with smtplib.SMTP(server, port, timeout=10) as s:
+                s.starttls()
+                s.login(user, password)
+                s.send_message(msg)
+        return True
+    except Exception:
+        return False  # a delivery hiccup must not lose the message (DB has it)
+
+
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
+    if request.method == "POST":
+        # honeypot: bots auto-fill the hidden 'website' field; humans never see it
+        if request.form.get("website"):
+            return redirect(url_for("contact") + "#form")
+
+        name = (request.form.get("name") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        subject = (request.form.get("subject") or "").strip()
+        body = (request.form.get("message") or "").strip()
+
+        if not name or not EMAIL_RE.match(email) or not body:
+            flash("يرجى إدخال الاسم وبريدٍ إلكتروني صحيح ونص الرسالة.", "error")
+            return redirect(url_for("contact") + "#form")
+
+        conn = get_db()
+        conn.execute(
+            "INSERT INTO messages (name, email, subject, body, created_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (name[:120], email[:160], subject[:200], body[:5000],
+             datetime.utcnow().isoformat()),
+        )
+        conn.commit()
+        conn.close()
+
+        send_contact_email(name, email, subject, body)  # best-effort forward
+        flash("تم إرسال رسالتك بنجاح، سنعود إليك قريبًا. شكرًا لتواصلك معنا.",
+              "success")
+        return redirect(url_for("contact") + "#form")
+
     return render_template("contact.html")
 
 
