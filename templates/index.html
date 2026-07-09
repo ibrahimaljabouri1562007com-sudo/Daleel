@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% set active = 'home' %}
+{% block title %}مركز الدليل – وجهتك الأولى للتدريب و الاستشارات المتخصص في العمل الإنساني{% endblock %}
+{% block desc %}مركز الدليل: وجهتك الأولى للتدريب والاستشارات المتخصصة في العمل الإنساني.{% endblock %}
+
+{% block content %}
+  <!-- ===== Hero ===== -->
+  <section class="hero" id="home">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-shade" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <span class="hero-eyebrow">مرحبًا بكم في</span>
+      <h1>مركز الدليل</h1>
+      <p class="hero-tagline">وجهتك الأولى للتدريب و الاستشارات المتخصص في العمل الإنساني، حيث يجتمع الخبراء لخدمتك في مكان واحد.</p>
+    </div>
+  </section>
+
+  <!-- ===== Edit-mode bar (admin only) ===== -->
+  {% if is_admin %}
+  <div class="edit-bar" id="editBar" role="region" aria-label="وضع التعديل">
+    <span class="edit-bar-txt"><span class="edit-bar-dot" aria-hidden="true"></span> أنت في وضع التعديل</span>
+    <button type="button" class="edit-exit" id="editExit">الخروج من وضع التعديل <span aria-hidden="true">✓</span></button>
+  </div>
+  {% endif %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="container">{% for c, m in messages %}<div class="flash flash-{{ c }}" role="status">{{ m }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <!-- ===== What's New (جديدنا) — editable ===== -->
+  <section id="news" class="section" data-editable>
+    <div class="container">
+      <div class="section-head" style="margin-bottom:22px">
+        <h2 class="section-title center"><span class="spark">✦</span> آخر الأخبار: دورات، مؤتمرات، وفعاليات تهمّك</h2>
+      </div>
+      {% if is_admin %}
+      <div class="section-toolbar">
+        <button type="button" class="edit-toggle js-edit-toggle" aria-pressed="false">
+          <span class="edit-ic" aria-hidden="true">✎</span> <span class="edit-label">تعديل</span>
+        </button>
+        <a href="{{ url_for('news_new') }}" class="add-book-btn add-inline js-add" title="نشر خبر جديد">
+          <span class="add-plus" aria-hidden="true">＋</span> نشر خبر
+        </a>
+      </div>
+      <p class="edit-hint">وضع التعديل مُفعّل — اسحب الأخبار لإعادة ترتيبها، أو عدّل، أو احذف، أو انشر خبرًا جديدًا.</p>
+      {% endif %}
+
+      <div class="news-grid js-grid" data-axis="y" data-reorder-url="{{ url_for('news_reorder') }}">
+        {% for n in news %}
+        <article class="news-card js-card{% if not n.src and not n.image %} news-card--text{% endif %}" data-id="{{ n.id }}">
+          {% if is_admin %}<span class="drag-handle" aria-hidden="true" title="اسحب لإعادة الترتيب">⠿</span>{% endif %}
+          {% if n.src %}
+            {% set emb = (n.src|embed) if n.src_type == 'url' else None %}
+            {% set psrc = emb or (n.src if n.src_type == 'url' else url_for('static', filename=n.src)) %}
+            <div class="news-media">
+              {% if n.image %}
+                {# uploaded cover used as a click-to-play poster (works for url AND file) #}
+                <button type="button" class="video-poster js-play" data-type="{{ 'embed' if emb else 'video' }}" data-src="{{ psrc }}" aria-label="تشغيل: {{ n.title }}">
+                  <img src="{{ url_for('static', filename=n.image) }}" alt="{{ n.title }}" loading="lazy" />
+                  <span class="play-badge" aria-hidden="true">▶</span>
+                </button>
+                <div class="video-slot"></div>
+              {% elif emb %}
+                <div class="video-frame"><iframe src="{{ emb }}" title="{{ n.title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+              {% else %}
+                <video class="news-vid" controls preload="metadata" src="{{ psrc }}{% if n.src_type != 'url' %}#t=1{% endif %}"></video>
+              {% endif %}
+            </div>
+          {% elif n.image %}
+            <div class="news-media news-media--img"><img class="news-img" src="{{ url_for('static', filename=n.image) }}" alt="{{ n.title }}" loading="lazy" /></div>
+          {% endif %}
+          <div class="news-body-wrap">
+            <h3 class="news-title">{{ n.title }}</h3>
+            {% if n.body %}<div class="article-body news-text">{{ n.body | article }}</div>{% endif %}
+          </div>
+          {% if is_admin %}
+          <div class="card-admin">
+            <a class="book-edit js-modify" href="{{ url_for('news_edit', news_id=n.id) }}"><span aria-hidden="true">✎</span> تعديل</a>
+            <form class="book-del-form js-del" action="{{ url_for('news_delete', news_id=n.id) }}" method="post"
+                  onsubmit="return confirm('هل أنت متأكد من حذف «{{ n.title }}»؟ لا يمكن التراجع.');">
+              <button type="submit" class="book-del" aria-label="حذف الخبر"><span aria-hidden="true">🗑</span> حذف</button>
+            </form>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% if not news %}<div class="news-bar">لا يوجد حاليًا</div>{% endif %}
+    </div>
+    <div class="container"><div class="soft-sep" aria-hidden="true"></div></div>
+  </section>
+
+  <!-- ===== About ===== -->
+  <section id="about" class="section">
+    <div class="container">
+      <h2 class="section-title start">من نحن</h2>
+      <p class="about-text">تأسس مركز الدليل عام 2025 في جمهورية العراق، ويتخذ من بغداد مقرًا رئيسيًا له. نحن مركز متخصص في التدريب والاستشارات في المجال الإنساني، نعمل على تمكين الأفراد والمنظمات ليكونوا أكثر فاعلية واستدامة في أدائهم. نقدم خدماتنا من خلال برامج تدريبية مهنية، وتوجيه متخصص، ودعم مؤسسي مبني على فهم عميق للواقع الميداني والتحديات التي يواجهها العاملون في القطاع الإنساني. بخبرتنا العملية، نُسهم في تطوير القدرات وتعزيز الأثر الحقيقي للعمل الإنساني.</p>
+      <div class="accordion" id="aboutAccordion">
+        <div class="acc-item open">
+          <button class="acc-head" aria-expanded="true">رؤيتنا <span class="acc-ic">−</span></button>
+          <div class="acc-body"><p>أن نصبح الخيار الأول عربيًا لتطوير قدرات العاملين في العمل الإنساني.</p></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-head" aria-expanded="false">رسالتنا <span class="acc-ic">+</span></button>
+          <div class="acc-body"><p>تقديم تدريب واستشارات عملية تُمكّن العاملين والمنظمات من تحقيق أثرٍ إنساني مستدام.</p></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-head" aria-expanded="false">لماذا الدليل ؟ <span class="acc-ic">+</span></button>
+          <div class="acc-body"><p>لأننا نجمع بين الخبرة الميدانية والمعرفة المتخصصة لنقدّم حلولًا عملية تحدث فرقًا حقيقيًا.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Empower / develop / sustain ===== -->
+  <section id="focus" class="section">
+    <div class="container focus-wrap">
+      <div class="focus-list">
+        <div class="feat"><img src="{{ url_for('static', filename='assets/img/online-learning.png') }}" alt="" class="feat-ic"/><div><h3>تمكين العاملين والمنظمات</h3><p>تزويد الأفراد والمنظمات الإنسانية بالمعرفة والمهارات اللازمة</p></div></div>
+        <div class="feat"><img src="{{ url_for('static', filename='assets/img/idea-exchange.png') }}" alt="" class="feat-ic"/><div><h3>سدّ فجوة الخبرات</h3><p>تعزيز الخبرات في القطاع غير الربحي في المنطقة العربية</p></div></div>
+        <div class="feat"><img src="{{ url_for('static', filename='assets/img/developing.png') }}" alt="" class="feat-ic"/><div><h3>دعم الأداء المؤسسي</h3><p>تحسين التخطيط المؤسسي وتنمية الموارد</p></div></div>
+        <div class="feat"><img src="{{ url_for('static', filename='assets/img/accountability.png') }}" alt="" class="feat-ic"/><div><h3>تعزيز الشفافية والاحترافية</h3><p>تطبيق المعايير الإنسانية الدولية في العمل.</p></div></div>
+        <div class="feat"><img src="{{ url_for('static', filename='assets/img/handshake.png') }}" alt="" class="feat-ic"/><div><h3>بناء شراكات استراتيجية</h3><p>التعاون مع المنظمات، الجامعات، والجهات المانحة</p></div></div>
+        <div class="feat"><img src="{{ url_for('static', filename='assets/img/knowledge.png') }}" alt="" class="feat-ic"/><div><h3>نشر المعرفة الإنسانية</h3><p>من خلال مكتبة إلكترونية متخصصة في المجال الإنساني.</p></div></div>
+      </div>
+      <div class="focus-side">
+        <h2 class="section-title start">تمكين، تطوير، واستدامة</h2>
+        <span class="title-rule"></span>
+        <p>نركز على تعزيز قدرات الأفراد والمنظمات الإنسانية، سد فجوة الخبرات، ودعم الأداء المؤسسي بما يحقق استدامة وأثر إيجابي في القطاع غير الربحي.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Values ===== -->
+  <section id="values" class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">قيمنا</span>
+        <h2 class="section-title">مبادئ نؤمن بها ونلتزم بها</h2>
+      </div>
+      <div class="values-grid">
+        <article class="value-card"><img src="{{ url_for('static', filename='assets/img/note-taking-1-88-1024x1024.png') }}" alt="" /><h3>الاحترافية</h3><p>نلتزم بأعلى معايير الجودة والدقة في جميع خدماتنا.</p></article>
+        <article class="value-card"><img src="{{ url_for('static', filename='assets/img/team-presentation-1-19-1024x1024.png') }}" alt="" /><h3>الإنسانية</h3><p>نضع كرامة الإنسان واحتياجاته في قلب كل ما نقوم به.</p></article>
+        <article class="value-card"><img src="{{ url_for('static', filename='assets/img/virtual-meeting-28-1024x1024.png') }}" alt="" /><h3>الشراكة</h3><p>نؤمن بقوة التعاون وبناء علاقات فعالة ومستدامة.</p></article>
+        <article class="value-card"><img src="{{ url_for('static', filename='assets/img/reminder-note-1-20-1024x1024.png') }}" alt="" /><h3>الشفافية</h3><p>نمارس أعلى درجات الوضوح في تعاملاتنا وتقاريرنا.</p></article>
+        <article class="value-card"><img src="{{ url_for('static', filename='assets/img/data-analysis-7-1024x1024.png') }}" alt="" /><h3>الاستدامة</h3><p>نركز على بناء حلول طويلة الأمد تعزز الأثر وتدعم الكفاءة.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Services ===== -->
+  <section id="services" class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">ماذا نقدّم؟</span>
+        <h2 class="section-title">نرافقكم بخبرة ومعرفة لتحقيق أثر إنساني مستدام</h2>
+      </div>
+      <div class="services">
+        <div class="svc"><h3><span>١.</span> استشارات للمؤسسات</h3><ul><li>تخطيط استراتيجي مبني على الواقع</li><li>تطوير الموارد والتمويل</li><li>بناء أنظمة فعالة للحوكمة والمتابعة</li></ul></div>
+        <div class="svc"><h3><span>٢.</span> دراسات وتقييمات</h3><ul><li>تقييم أثر المشاريع</li><li>تحليل الاحتياجات المجتمعية</li><li>إعداد تقارير واضحة تدعم اتخاذ القرار</li></ul></div>
+        <div class="svc"><h3><span>٣.</span> تدريب عملي</h3><ul><li>ورش تدريبية مصممة حسب حاجتك</li><li>مواضيع تشمل إدارة المشاريع، كتابة المقترحات، والمعايير الإنسانية الدولية</li><li>حضوريًا أو عن بعد</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Programs ===== -->
+  <section id="programs" class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">استراتيجياتنا لتحقيق التأثير</span>
+        <h2 class="section-title">برامج تدريبية متخصصة</h2>
+      </div>
+      <div class="prog-grid">
+        <article class="prog"><div class="prog-img"><img src="{{ url_for('static', filename='assets/img/2149300712-r.jpg') }}" alt=""/><span class="prog-badge">مركز الدليل</span></div><h3>تطوير خطط استراتيجية</h3><p>نصمم خطط استراتيجية وتنموية مخصصة للمؤسسات الإنسانية لضمان استدامتها.</p></article>
+        <article class="prog"><div class="prog-img"><img src="{{ url_for('static', filename='assets/img/810-r5nujzk2.jpg') }}" alt=""/><span class="prog-badge">مركز الدليل</span></div><h3>دراسات ميدانية وتقييمات</h3><p>نقوم بإعداد وتنفيذ دراسات ميدانية وتقييمات احترافية لقياس الأثر وتحسين الأداء.</p></article>
+        <article class="prog"><div class="prog-img"><img src="{{ url_for('static', filename='assets/img/2147785631-r.jpg') }}" alt=""/><span class="prog-badge">مركز الدليل</span></div><h3>استشارات مؤسسية</h3><p>نقدم خدمات استشارية مبنية على أفضل الممارسات العالمية.</p></article>
+        <article class="prog"><div class="prog-img"><img src="{{ url_for('static', filename='assets/img/2147826517-r.jpg') }}" alt=""/><span class="prog-badge">مركز الدليل</span></div><h3>برامج تدريبية متخصصة</h3><p>نقدم تدريبًا حضوريًا ورقميًا لتطوير مهارات الأفراد والمنظمات.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Partners (dark band) ===== -->
+  <section id="partners" class="section section-dark">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker kicker-light">لمن نعمل؟</span>
+        <h2 class="section-title title-light">شراكاتنا مع الفاعلين في القطاع الإنساني</h2>
+      </div>
+      <div class="partners">
+        <div class="ptr"><img src="{{ url_for('static', filename='assets/img/bank.png') }}" alt=""/><p>الحكومات والمؤسسات الرسمية الداعمة للقطاع غير الربحي</p></div>
+        <div class="ptr"><img src="{{ url_for('static', filename='assets/img/donor.png') }}" alt=""/><p>الجهات المانحة والشركاء التقنيين الباحثين عن أثر مستدام</p></div>
+        <div class="ptr"><img src="{{ url_for('static', filename='assets/img/research-institute.png') }}" alt=""/><p>الجامعات ومراكز البحوث المعنية بالتنمية والعمل الإنساني</p></div>
+        <div class="ptr"><img src="{{ url_for('static', filename='assets/img/emergency.png') }}" alt=""/><p>فرق الطوارئ والإغاثة العاملة في الميدان</p></div>
+        <div class="ptr"><img src="{{ url_for('static', filename='assets/img/social-care.png') }}" alt=""/><p>المنظمات الإنسانية والوقفية المحلية والدولية</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Digital Library ===== -->
+  <section id="library" class="section">
+    <div class="container">
+      <div class="section-head center-rule">
+        <h2 class="section-title">مكتبتنا الرقمية</h2>
+      </div>
+      <div class="lib-grid">
+        <article class="lib-card">
+          <div class="lib-ic">▶</div>
+          <h3>فيديوهات تعليمية</h3>
+          <p>محتوى مرئي يشرح المفاهيم الأساسية بشكل مبسط.</p>
+          <a href="{{ url_for('library') }}#videos" class="lib-more">عرض المزيد <span aria-hidden="true">←</span></a>
+        </article>
+        <article class="lib-card">
+          <div class="lib-ic">📄</div>
+          <h3>مقالات تعليمية</h3>
+          <p>مقالات غنيّة تغطي مواضيع متخصصة وحديثة.</p>
+          <a href="{{ url_for('library') }}#articles" class="lib-more">عرض المزيد <span aria-hidden="true">←</span></a>
+        </article>
+        <article class="lib-card">
+          <div class="lib-ic">📘</div>
+          <h3>كتيبات عملية</h3>
+          <p>ملفات عملية يمكنك الاعتماد عليها في التدريب والميدان.</p>
+          <a href="{{ url_for('library') }}#booklets" class="lib-more">عرض المزيد <span aria-hidden="true">←</span></a>
+        </article>
+        <article class="lib-card">
+          <div class="lib-ic">🧰</div>
+          <h3>أدوات ونماذج قابلة للتحميل</h3>
+          <p>نماذج جاهزة تساعدك في تنظيم عملك بكفاءة.</p>
+          <a href="{{ url_for('library') }}#tools" class="lib-more">عرض المزيد <span aria-hidden="true">←</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Team / Director ===== -->
+  <section id="team" class="section">
+    <div class="container">
+      <div class="section-head center-rule">
+        <h2 class="section-title">خبرات ميدانية ورؤية احترافية</h2>
+      </div>
+      <div class="director">
+        <img src="{{ url_for('static', filename='assets/img/IMG-2.png') }}" alt="د. جمال الجبوري" class="dir-photo" />
+        <span class="dir-role">مدير المركز</span>
+        <h3>د. جمال الجبوري</h3>
+        <a href="{{ url_for('director') }}" class="dir-cv">السيرة الذاتية</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Courses ===== -->
+  <section id="courses" class="section">
+    <div class="container">
+      <div class="section-head center-rule">
+        <h2 class="section-title">الدورات</h2>
+      </div>
+      <div class="courses-empty">لا توجد دورات معلنة حاليًا — ترقّبوا الجدول القادم قريبًا.</div>
+    </div>
+  </section>
+{% endblock %}

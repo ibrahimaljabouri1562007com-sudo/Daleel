@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% set active = 'contact' %}
+{% block title %}اتصل بنا – مركز الدليل{% endblock %}
+{% block desc %}تواصل مع مركز الدليل للتدريب والاستشارات الإنسانية عبر النموذج المباشر.{% endblock %}
+
+{% block content %}
+  <!-- ===== Page hero ===== -->
+  <section class="page-hero">
+    <div class="container"><h1>اتصل بنا</h1></div>
+  </section>
+
+  <!-- ===== Contact ===== -->
+  <main class="contact-wrap">
+    <div class="container">
+      <div class="section-head">
+        <h2 class="section-title">اتصل بنا، نحن هنا لمساعدتك</h2>
+        <p class="section-sub">أرسل رسالتك مباشرةً من هنا وسنعود إليك في أقرب وقت.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash flash-{{ category }}" role="status">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="contact-layout" id="form">
+        <!-- Primary: on-page message form -->
+        <div class="contact-form-card">
+          <h3 class="cf-title">أرسل لنا رسالة</h3>
+          <form class="contact-form" method="POST" action="{{ url_for('contact') }}" novalidate>
+            <!-- honeypot: hidden from humans, catches spam bots -->
+            <div class="hp-field" aria-hidden="true">
+              <label>لا تملأ هذا الحقل <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+            </div>
+
+            <div class="cf-row">
+              <div class="cf-group">
+                <label for="cf-name">الاسم <span class="req">*</span></label>
+                <input id="cf-name" name="name" type="text" maxlength="120" required
+                       placeholder="اسمك الكريم">
+              </div>
+              <div class="cf-group">
+                <label for="cf-email">البريد الإلكتروني <span class="req">*</span></label>
+                <input id="cf-email" name="email" type="email" maxlength="160" required
+                       placeholder="you@example.com" dir="ltr">
+              </div>
+            </div>
+
+            <div class="cf-group">
+              <label for="cf-subject">الموضوع</label>
+              <select id="cf-subject" name="subject">
+                <option value="استفسار عام">استفسار عام</option>
+                <option value="الدورات والبرامج">الدورات والبرامج</option>
+                <option value="الاستشارات">الاستشارات</option>
+                <option value="التعاون والشراكات">التعاون والشراكات</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+            </div>
+
+            <div class="cf-group">
+              <label for="cf-message">رسالتك <span class="req">*</span></label>
+              <textarea id="cf-message" name="message" rows="6" maxlength="5000" required
+                        placeholder="اكتب رسالتك هنا..."></textarea>
+            </div>
+
+            <button type="submit" class="cf-submit">إرسال الرسالة</button>
+            <p class="cf-note">سنستخدم بريدك للرد على استفسارك فقط.</p>
+          </form>
+        </div>
+
+        <!-- Secondary: direct contact details -->
+        <aside class="contact-info">
+          <div class="cc-card">
+            <div class="cc-ic">📞</div>
+            <h3>الهاتف</h3>
+            <p dir="ltr">‎+9647874935409</p>
+          </div>
+          <div class="cc-card">
+            <div class="cc-ic">✉</div>
+            <h3>البريد الإلكتروني</h3>
+            <p><a class="cv-link" href="mailto:info@daleelconsult.org?subject=استفسار%20عبر%20الموقع">info@daleelconsult.org</a></p>
+            <button type="button" class="copy-btn" data-copy="info@daleelconsult.org" aria-label="نسخ البريد الإلكتروني">نسخ البريد</button>
+          </div>
+          <div class="cc-card">
+            <div class="cc-ic">📍</div>
+            <h3>موقعنا</h3>
+            <p>بغداد، القادسية، قرب جامع القادسية</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active = 'library' %}
+{% block title %}{{ post.title }} – مركز الدليل{% endblock %}
+{% block desc %}{{ post.excerpt }}{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container"><h1>{{ post.title }}</h1></div>
+  </section>
+
+  <main class="article-wrap">
+    <div class="container">
+      {% if is_admin %}
+      <div class="detail-admin">
+        <a href="{{ url_for('post_edit', post_id=post.id) }}" class="book-edit"><span aria-hidden="true">✎</span> تعديل المقال</a>
+      </div>
+      {% endif %}
+
+      <article class="article-card">
+        {% if post.author %}<p class="article-meta"><strong>الكاتب:</strong> {{ post.author }}</p>{% endif %}
+        {% if post.date %}<p class="article-meta">📅 {{ post.date }}</p>{% endif %}
+        {% if post.image %}<img class="article-hero-img" src="{{ url_for('static', filename=post.image) }}" alt="{{ post.title }}" />{% endif %}
+
+        <div class="article-body">{{ post.body | article }}</div>
+      </article>
+
+      <div class="article-back">
+        <a href="{{ url_for('library') }}#articles" class="btn-cancel">→ العودة إلى المقالات</a>
+      </div>
+    </div>
+  </main>
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}مركز الدليل{% endblock %}</title>
+  <meta name="description" content="{% block desc %}مركز الدليل: وجهتك الأولى للتدريب والاستشارات المتخصصة في العمل الإنساني.{% endblock %}" />
+  <link rel="icon" href="{{ url_for('static', filename='assets/logo.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/fonts/fonts.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ ASSET_V }}" />
+</head>
+<body>
+
+  {# hp = anchor prefix: '' on home (same-page scroll), '/' on sub-pages (jump to home then scroll) #}
+  {% set hp = '' if active == 'home' else url_for('home') %}
+
+  <!-- ===== Top utility bar (gold) ===== -->
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <span class="tb-item">‎+9647874935409 <i>📞</i></span>
+      <span class="tb-sep">|</span>
+      <span class="tb-item"><a class="tb-mail" href="mailto:info@daleelconsult.org?subject=استفسار%20عبر%20الموقع">info@daleelconsult.org <i>✉</i></a></span>
+      <span class="tb-sep">|</span>
+      <span class="tb-item">Baghdad, Al-Qadisiyyah, near Al-Qadisiyyah Mosque. <i>📍</i></span>
+    </div>
+  </div>
+
+  <!-- ===== Header / Navigation ===== -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a href="{{ url_for('home') }}" class="brand" aria-label="مركز الدليل — الصفحة الرئيسية">
+        <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="مركز الدليل للتدريب والاستشارات الإنسانية" class="logo-img" />
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="فتح القائمة" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="main-nav" id="mainNav">
+        <a href="{{ url_for('home') }}"{% if active == 'home' %} class="active"{% endif %}>الصفحة الرئيسية</a>
+        <a href="{{ hp }}#about">لماذا الدليل؟</a>
+        <div class="nav-dd">
+          <a href="{{ hp }}#about" class="dd-top">من نحن <span class="plus">+</span></a>
+          <div class="dd-panel">
+            <a href="{{ hp }}#about">من نحن</a>
+            <a href="{{ hp }}#focus">أهدافنا</a>
+            <a href="{{ hp }}#values">قيمنا</a>
+            <a href="{{ hp }}#partners">لمن نعمل ؟</a>
+            <a href="{{ hp }}#services">ماذا نقدّم؟</a>
+          </div>
+        </div>
+        <div class="nav-dd">
+          <a href="{{ hp }}#programs" class="dd-top">البرامج <span class="plus">+</span></a>
+          <div class="dd-panel">
+            <a href="{{ hp }}#programs">البرامج</a>
+            <a href="{{ hp }}#courses">الدورات</a>
+          </div>
+        </div>
+        <a href="{{ url_for('home') }}#team">مدير المركز</a>
+        <div class="nav-dd">
+          <a href="{{ url_for('library') }}" class="dd-top{% if active == 'library' %} active{% endif %}">مكتبتنا الرقمية <span class="plus">+</span></a>
+          <div class="dd-panel">
+            <a href="{{ url_for('library') }}#videos">فيديوهات تعليمية</a>
+            <a href="{{ url_for('library') }}#articles">مقالات تعليمية</a>
+            <a href="{{ url_for('library') }}#booklets">كتيبات عملية</a>
+            <a href="{{ url_for('library') }}#tools">أدوات ونماذج</a>
+          </div>
+        </div>
+        <a href="{{ url_for('contact') }}"{% if active == 'contact' %} class="active"{% endif %}>اتصل بنا</a>
+      </nav>
+    </div>
+  </header>
+
+  {% block content %}{% endblock %}
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <h4>تواصل معنا</h4>
+        <div class="fc-item"><span class="fc-ic">📞</span><div><strong>اتصل بنا</strong><p>‎+9647874935409</p></div></div>
+        <div class="fc-item"><span class="fc-ic">✉</span><div><strong>بريد إلكتروني</strong><p><a class="fc-link" href="mailto:info@daleelconsult.org?subject=استفسار%20عبر%20الموقع">info@daleelconsult.org</a></p></div></div>
+        <div class="fc-item"><span class="fc-ic">📍</span><div><strong>موقعنا</strong><p>بغداد، القادسية، قرب جامع القادسية</p></div></div>
+      </div>
+      <div class="footer-col">
+        <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="مركز الدليل" class="footer-logo" />
+        <p class="footer-about">مركز الدليل هو مركز تدريبي و استشاري متخصص في تمكين الأفراد والمنظمات الإنسانية من تحقيق الأثر والكفاءة في العمل الإنساني.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        © 2026 مركز الدليل. جميع الحقوق محفوظة.
+        {% if is_admin %}
+          <span class="admin-sep">·</span> <a href="{{ url_for('admin_logout') }}" class="admin-link">خروج المشرف</a>
+        {% else %}
+          <span class="admin-sep">·</span> <a href="{{ url_for('admin_login') }}" class="admin-link">دخول المشرف</a>
+        {% endif %}
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}?v={{ ASSET_V }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

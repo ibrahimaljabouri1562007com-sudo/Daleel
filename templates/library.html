@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% set active = 'library' %}
+{% block title %}مكتبتنا الرقمية – مركز الدليل{% endblock %}
+{% block desc %}المكتبة الرقمية لمركز الدليل: فيديوهات ومقالات وكتيبات في العمل الإنساني.{% endblock %}
+
+{% block content %}
+  <!-- ===== Page hero ===== -->
+  <section class="page-hero">
+    <div class="container"><h1>مكتبتنا الرقمية</h1></div>
+  </section>
+
+  <!-- ===== Edit-mode bar (admin only, visible while any section is editing) ===== -->
+  {% if is_admin %}
+  <div class="edit-bar" id="editBar" role="region" aria-label="وضع التعديل">
+    <span class="edit-bar-txt"><span class="edit-bar-dot" aria-hidden="true"></span> أنت في وضع التعديل</span>
+    <button type="button" class="edit-exit" id="editExit">
+      الخروج من وضع التعديل <span aria-hidden="true">✓</span>
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- ===== Flash messages ===== -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container">
+      {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}" role="status">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ===== Videos ===== -->
+  <section id="videos" class="lib-section" data-editable>
+    <div class="container">
+      <div class="section-head sec-head">
+        <h2 class="section-title">فيديوهات تعليمية</h2>
+        {% if is_admin %}
+        <div class="edit-tools">
+          <button type="button" class="edit-toggle js-edit-toggle" aria-pressed="false">
+            <span class="edit-ic" aria-hidden="true">✎</span> <span class="edit-label">تعديل</span>
+          </button>
+          <a href="{{ url_for('video_new') }}" class="add-book-btn js-add" title="نشر فيديو جديد">
+            <span class="add-plus" aria-hidden="true">＋</span> نشر فيديو
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% if is_admin %}<p class="edit-hint">وضع التعديل مُفعّل — اسحب الفيديوهات لإعادة ترتيبها، أو احذف، أو انشر فيديو جديدًا.</p>{% endif %}
+
+      {% if videos %}
+      <div class="media-grid js-grid" data-reorder-url="{{ url_for('video_reorder') }}">
+        {% for v in videos %}
+        <article class="video-card js-card" data-id="{{ v.id }}">
+          {% if is_admin %}<span class="drag-handle" aria-hidden="true" title="اسحب لإعادة الترتيب">⠿</span>{% endif %}
+          <h3 class="lib-video-title">{{ v.title }}</h3>
+          {% if v.src %}
+            {% set emb = (v.src|embed) if v.src_type == 'url' else None %}
+            {% if v.src_type == 'url' and emb %}
+              {% set ptype = 'embed' %}{% set psrc = emb %}
+            {% elif v.src_type == 'url' %}
+              {% set ptype = 'video' %}{% set psrc = v.src %}
+            {% else %}
+              {% set ptype = 'video' %}{% set psrc = url_for('static', filename=v.src) %}
+            {% endif %}
+            <div class="video-holder">
+              {% if v.poster %}
+                <button type="button" class="video-poster js-play" data-type="{{ ptype }}" data-src="{{ psrc }}" aria-label="تشغيل الفيديو: {{ v.title }}">
+                  <img src="{{ url_for('static', filename=v.poster) }}" alt="{{ v.title }}" loading="lazy" />
+                  <span class="play-badge" aria-hidden="true">▶</span>
+                </button>
+                <div class="video-slot"></div>
+              {% elif ptype == 'embed' %}
+                <div class="video-frame"><iframe src="{{ psrc }}" title="{{ v.title }}"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen loading="lazy"></iframe></div>
+              {% else %}
+                <video class="lib-video-el" controls preload="metadata"
+                  src="{{ psrc }}{% if v.src_type != 'url' %}#t=2{% endif %}"></video>
+              {% endif %}
+            </div>
+          {% elif v.poster %}
+            <div class="video-holder"><img class="news-img" src="{{ url_for('static', filename=v.poster) }}" alt="{{ v.title }}" style="width:100%;border-radius:12px" /></div>
+          {% else %}
+            <div class="lib-empty"><div class="lib-empty-ic">▶</div><p>لا يوجد فيديو — عدّل هذا العنصر لإضافة فيديو.</p></div>
+          {% endif %}
+          {% if is_admin %}
+          <div class="card-admin">
+            <a class="book-edit js-modify" href="{{ url_for('video_edit', video_id=v.id) }}"><span aria-hidden="true">✎</span> تعديل</a>
+            <form class="book-del-form js-del" action="{{ url_for('video_delete', video_id=v.id) }}" method="post"
+                  onsubmit="return confirm('هل أنت متأكد من حذف الفيديو «{{ v.title }}»؟ لا يمكن التراجع.');">
+              <button type="submit" class="book-del" aria-label="حذف الفيديو"><span aria-hidden="true">🗑</span> حذف</button>
+            </form>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="lib-empty">
+        <div class="lib-empty-ic">▶</div>
+        <p>لم تُرفع فيديوهات بعد — ترقّبوا جديدنا قريبًا.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ===== Teaching articles (posts) — full articles with detail pages ===== -->
+  <section id="articles" class="lib-section section-alt" data-editable>
+    <div class="container">
+      <div class="section-head sec-head">
+        <h2 class="section-title">مقالات تعليمية</h2>
+        {% if is_admin %}
+        <div class="edit-tools">
+          <button type="button" class="edit-toggle js-edit-toggle" aria-pressed="false">
+            <span class="edit-ic" aria-hidden="true">✎</span> <span class="edit-label">تعديل</span>
+          </button>
+          <a href="{{ url_for('post_new') }}" class="add-book-btn js-add" title="نشر مقال جديد">
+            <span class="add-plus" aria-hidden="true">＋</span> نشر مقال
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% if is_admin %}<p class="edit-hint">وضع التعديل مُفعّل — اسحب المقالات لإعادة ترتيبها، أو عدّل، أو احذف، أو انشر مقالًا جديدًا.</p>{% endif %}
+
+      {% if posts %}
+      <div class="books-grid js-grid" data-reorder-url="{{ url_for('post_reorder') }}">
+        {% for p in posts %}
+        <article class="book-card js-card" data-id="{{ p.id }}">
+          {% if is_admin %}<span class="drag-handle" aria-hidden="true" title="اسحب لإعادة الترتيب">⠿</span>{% endif %}
+          <a href="{{ url_for('post_detail', post_id=p.id) }}" aria-label="اقرأ المقال">
+            {% if p.image %}<img class="book-cover" src="{{ url_for('static', filename=p.image) }}" alt="{{ p.title }}" loading="lazy" />{% endif %}
+          </a>
+          <a href="{{ url_for('post_detail', post_id=p.id) }}" class="book-title-link"><h3 class="book-title">{{ p.title }}</h3></a>
+          {% if p.date %}<div class="post-date">📅 {{ p.date }}</div>{% endif %}
+          {% if p.excerpt %}<p class="book-desc">{{ p.excerpt }}</p>{% endif %}
+          <a class="book-dl" href="{{ url_for('post_detail', post_id=p.id) }}">قراءة المقال <span aria-hidden="true">←</span></a>
+          {% if is_admin %}
+          <div class="card-admin">
+            <a class="book-edit js-modify" href="{{ url_for('post_edit', post_id=p.id) }}"><span aria-hidden="true">✎</span> تعديل</a>
+            <form class="book-del-form js-del" action="{{ url_for('post_delete', post_id=p.id) }}" method="post"
+                  onsubmit="return confirm('هل أنت متأكد من حذف المقال «{{ p.title }}»؟ لا يمكن التراجع.');">
+              <button type="submit" class="book-del" aria-label="حذف المقال"><span aria-hidden="true">🗑</span> حذف</button>
+            </form>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="lib-empty">
+        <div class="lib-empty-ic">📄</div>
+        <p>لم تُنشر مقالات بعد — ترقّبوا جديدنا قريبًا.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ===== Booklets ===== -->
+  <section id="booklets" class="lib-section" data-editable>
+    <div class="container">
+      <div class="section-head sec-head">
+        <h2 class="section-title">كتيبات عملية</h2>
+        {% if is_admin %}
+        <div class="edit-tools">
+          <button type="button" class="edit-toggle js-edit-toggle" aria-pressed="false">
+            <span class="edit-ic" aria-hidden="true">✎</span> <span class="edit-label">تعديل</span>
+          </button>
+          <a href="{{ url_for('book_new') }}" class="add-book-btn js-add" title="إضافة كتاب جديد">
+            <span class="add-plus" aria-hidden="true">＋</span> إضافة كتاب
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% if is_admin %}<p class="edit-hint">وضع التعديل مُفعّل — اسحب البطاقات لإعادة ترتيبها، أو احذف، أو أضِف كتابًا.</p>{% endif %}
+      <div class="books-grid js-grid" data-reorder-url="{{ url_for('book_reorder') }}">
+        {% for b in books %}
+        <article class="book-card js-card" data-id="{{ b.id }}">
+          {% if is_admin %}<span class="drag-handle" aria-hidden="true" title="اسحب لإعادة الترتيب">⠿</span>{% endif %}
+          <img class="book-cover" src="{{ url_for('static', filename=b.cover) }}" alt="{{ b.title }}" loading="lazy" />
+          <h3 class="book-title">{{ b.title }}</h3>
+          {% if b.description %}<p class="book-desc">{{ b.description }}</p>{% endif %}
+          {% if b.file %}<a class="book-dl" href="{{ url_for('static', filename=b.file) }}" download>تحميل <span aria-hidden="true">↓</span></a>{% endif %}
+          {% if is_admin %}
+          <div class="card-admin">
+            <a class="book-edit js-modify" href="{{ url_for('book_edit', book_id=b.id) }}"><span aria-hidden="true">✎</span> تعديل</a>
+            <form class="book-del-form js-del" action="{{ url_for('book_delete', book_id=b.id) }}" method="post"
+                  onsubmit="return confirm('هل أنت متأكد من حذف «{{ b.title }}»؟ لا يمكن التراجع عن هذا الإجراء.');">
+              <button type="submit" class="book-del" aria-label="حذف الكتاب">
+                <span aria-hidden="true">🗑</span> حذف
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      <div class="lib-cta">
+        <div class="lib-cta-ic">📘</div>
+        <p>للحصول على النسخ الكاملة من الكتيبات، تواصل معنا مباشرة.</p>
+        <a href="{{ url_for('contact') }}" class="lib-cta-btn">تواصل معنا الآن <span aria-hidden="true">←</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Tools & templates (not editable yet) ===== -->
+  <section id="tools" class="lib-section section-alt">
+    <div class="container">
+      <div class="section-head"><h2 class="section-title">أدوات ونماذج قابلة للتحميل</h2></div>
+      <div class="lib-empty">
+        <div class="lib-empty-ic">🧰</div>
+        <p>لم تُرفع أدوات أو نماذج بعد — ترقّبوا جديدنا قريبًا.</p>
+      </div>
+    </div>
+  </section>
+{% endblock %}
