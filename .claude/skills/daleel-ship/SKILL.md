@@ -177,13 +177,15 @@ and — if useful — the repo URL:
 
 ```bash
 cd "work here/Daleel"
-git status -sb                 # 1. see what changed
-git diff                       # 1. review the actual changes
+git status -sb                          # 1. see what changed
+git diff                                # 1. review the actual changes
 # 2. eyeball for secrets / db / uploads (gitignore handles these)
-git add -A                     # 3. stage
-git commit -m "Clear summary"  # 4. save a labeled snapshot (local)
-git push origin main           # 5. send to GitHub (confirm first!)
-git status -sb                 # 6. confirm "up to date with origin/main"
+git add -A                              # 3. stage
+git commit -m "Clear summary"           # 4. save a labeled snapshot (local)
+git fetch origin main                   # 5a. sync FIRST — check the remote
+git rev-list --count HEAD..origin/main  #     >0? git pull --rebase + re-verify (5b)
+git push origin main                    # 5c. send to GitHub (confirm first!)
+git status -sb                          # 6. confirm "up to date with origin/main"
 ```
 
 ## Notes for this repo specifically
