@@ -11,6 +11,28 @@ live as skills in `.claude/skills/` (see "The toolkit" below).
 - `templates/` = plate molds — Jinja (one `base.html`, RTL Arabic)
 - `static/` = pantry — css/js/images, plus `uploads/` for admin-added files
 
+## First, get your bearings — take the tour (once, at the start)
+
+**Do this one time, right after you first open this project — before you take on
+any task.** It is a *setup step to load the context into your head*, **not** a
+routine you repeat: once you've done it, every later request in this session builds
+on what you learned here, so you never need to tour again.
+
+Walk these in order — a quick skim is enough (read deeper only if the task is large):
+
+1. **`app.py`** — the routes (the site's doorways), the shared helpers you're
+   expected to reuse (`save_upload`/`take_upload`, `_ordered`/`get_one`, the
+   `admin_required` gate), and **`init_db()`**, which defines the whole database
+   (books, videos, posts, news, messages).
+2. **`templates/base.html`** — the shared page skeleton and the right-to-left
+   Arabic layout that every page extends.
+3. **`static/css/style.css`** — the visual system, so anything new you build matches.
+
+**Why this comes first:** everything below — the clean-code rules, the "reuse the
+existing helpers" guidance, the workflow — only truly makes sense once you've *seen*
+the code it refers to. Tour once at the start, and the rest of this file stops being
+abstract and becomes obvious.
+
 ## ⭐ The core workflow — code change → verify → offer to ship
 
 This is the most important rule here. **Whenever the user asks to modify the
