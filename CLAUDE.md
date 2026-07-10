@@ -59,6 +59,27 @@ without an explicit yes:
 > go-signal — but Claude asks for it at the right moment (after the user has seen
 > the result), instead of making the user remember to ask.
 
+## When you add a publishing feature — keep a skill in sync
+
+Some features let the site **publish new content** (a new kind of book, video,
+post, event — anything an admin adds through the site). When you build one, the job
+**isn't done** until the publishing toolkit can drive it too — so it can later be
+published by plain request or command.
+
+After the feature is built and verified, do one of these:
+
+- **Usually — extend `daleel-publish`.** If it follows the same admin-form pattern
+  (a form → save to the DB, like books/videos/articles), add it as a new
+  *variation* inside the existing `daleel-publish` skill. One skill, a new branch —
+  don't duplicate a near-identical skill.
+- **Only if genuinely different — create a new skill.** If its publishing path is
+  truly different (a different mechanism/flow, not just new fields), give it its own
+  skill under `.claude/skills/`, plus a matching `/command` if useful.
+
+**Why:** the app and the skills must grow together. A new publish feature that ships
+without skill coverage leaves a future Claude unable to drive it — which defeats the
+whole point of the toolkit.
+
 ## The go-signal rule (outward actions always confirm)
 
 The dividing line: **automate what's cheap/safe/reversible; ask before anything

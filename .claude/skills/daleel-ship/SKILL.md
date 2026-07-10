@@ -114,21 +114,51 @@ Good vs weak messages:
 **Confirm the message with the user** before committing if there's any doubt.
 After committing, the change is saved **locally** — it is still NOT on GitHub yet.
 
-## Step 5 — Push (send it to GitHub)
+## Step 5 — Sync with the remote FIRST, then push
 
-This is the step that publishes. Confirm with the user first, then:
+A contributor may have pushed to GitHub since you last synced, so the remote `main`
+can be **ahead** of your local. Always check *before* pushing — don't just fire and
+hope for a clean result.
+
+**5a. Fetch and check whether the remote is ahead:**
+
+```bash
+git fetch origin main
+git rev-list --count HEAD..origin/main   # = commits on GitHub you DON'T have locally
+```
+
+- Prints **0** → you're in sync; skip to 5c.
+- Prints **more than 0** → someone else has pushed since your last sync. Do **5b** first.
+
+**5b. Integrate their work UNDER yours (only if the remote was ahead):**
+
+Pull their commits in and replay *your* completed work on top, so your new commit
+becomes a clean add *above* theirs — never a force-overwrite:
+
+```bash
+git pull --rebase origin main
+```
+
+Then **re-verify (ASVL)** — their changes could interact with yours. Re-run the app
+locally and confirm your feature still works *and* nothing of theirs regressed; fix
+if needed. Only continue once the combined result is clean.
+
+> **Why (the rule):** if the last commit on GitHub was **not** made from this device,
+> you must bring those changes down and sit your work on top of them *before* shipping.
+> That makes your push a clean **addition** on top of the previous commit — instead of
+> a rejected or conflicting one.
+
+**5c. Push (confirm with the user first):**
 
 ```bash
 git push origin main
 ```
 
-Watch the output:
 - Success → git prints an updated ref line (e.g. `main -> main`). It's now on GitHub.
-- **Rejected / "fetch first"** → GitHub has commits you don't have locally
-  (maybe edited from another machine or the web). Do **not** force it. Run
-  `git pull --rebase origin main`, resolve if needed, then push again.
-- **Auth prompt / failure** → the user may need to re-authenticate to GitHub.
-  Report it plainly; don't retry blindly.
+- **Still rejected** → the remote moved again between 5a and now; repeat 5b, then push.
+  **Never** force-push.
+- **Auth prompt / failure** → the user may need to re-authenticate to GitHub. Report
+  it plainly; don't retry blindly.
 
 ## Step 6 — Confirm it landed
 
