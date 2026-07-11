@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}ألبوم صور مدير المركز – مركز الدليل{% endblock %}
+{% block desc %}ألبوم صور مدير مركز الدليل د. جمال الجبوري.{% endblock %}
+
+{% block content %}
+  <!-- ===== Page hero ===== -->
+  <section class="page-hero">
+    <div class="container"><h1>ألبوم صور مدير المركز</h1></div>
+  </section>
+
+  <!-- ===== Album gallery ===== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head center-rule">
+        <h2 class="section-title">د. جمال الجبوري</h2>
+      </div>
+
+      <div class="album-grid">
+        {% for photo in photos %}
+        <figure class="album-item">
+          <img src="{{ url_for('static', filename=photo) }}"
+               alt="صورة من ألبوم د. جمال الجبوري" loading="lazy" />
+        </figure>
+        {% endfor %}
+      </div>
+
+      <div class="album-actions">
+        <a href="{{ url_for('home') }}#team" class="dir-cv">← رجوع</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

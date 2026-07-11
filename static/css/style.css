@@ -182,6 +182,16 @@ img{max-width:100%;display:block}
 .director h3{font-size:22px;font-weight:700;color:var(--green-900);margin:4px 0 10px}
 .dir-cv{display:inline-block;color:var(--gold);font-weight:700;font-size:14px;border:1px solid var(--gold);padding:8px 22px;border-radius:6px;cursor:pointer;transition:background .2s,color .2s}
 .dir-cv:hover{background:var(--gold);color:#fff}
+.dir-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:2px}
+
+/* ---------- Director album ---------- */
+.album-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.album-item{margin:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;box-shadow:var(--shadow);aspect-ratio:4/3}
+.album-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.album-item:hover img{transform:scale(1.05)}
+.album-actions{text-align:center;margin-top:34px}
+@media (max-width:860px){.album-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.album-grid{grid-template-columns:1fr}}
 
 /* ---------- Courses empty ---------- */
 .courses-empty{max-width:1000px;margin:0 auto;background:#fbeaea;color:#9a5a5a;border-radius:6px;padding:20px 26px;text-align:start;font-size:15px}

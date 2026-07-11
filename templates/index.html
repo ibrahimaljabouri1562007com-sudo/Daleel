@@ -240,7 +240,10 @@
         <img src="{{ url_for('static', filename='assets/img/IMG-2.png') }}" alt="د. جمال الجبوري" class="dir-photo" />
         <span class="dir-role">مدير المركز</span>
         <h3>د. جمال الجبوري</h3>
-        <a href="{{ url_for('director') }}" class="dir-cv">السيرة الذاتية</a>
+        <div class="dir-actions">
+          <a href="{{ url_for('director') }}" class="dir-cv">السيرة الذاتية</a>
+          <a href="{{ url_for('album') }}" class="dir-cv">ألبوم الصور</a>
+        </div>
       </div>
     </div>
   </section>

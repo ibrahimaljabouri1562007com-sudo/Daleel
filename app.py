@@ -464,6 +464,21 @@ def director():
     return render_template("director.html")
 
 
+@app.route("/director/album")
+def album():
+    # مدير المركز — ألبوم الصور. قائمة ثابتة الآن (صور عيّنة)؛ تُحوَّل لاحقًا
+    # إلى قاعدة البيانات مع لوحة المشرف إذا أردنا رفع الصور من الموقع.
+    photos = [
+        "assets/img/IMG-2.png",
+        "assets/img/2147785631-r.jpg",
+        "assets/img/2148483874.jpg",
+        "assets/img/2149300712-r.jpg",
+        "assets/img/810-r5nujzk2.jpg",
+        "assets/img/article-teams.webp",
+    ]
+    return render_template("album.html", photos=photos)
+
+
 @app.route("/articles", methods=["GET", "POST"])
 def articles():
     # المقالات now lives inside the library's "مقالات تعليمية" section.
