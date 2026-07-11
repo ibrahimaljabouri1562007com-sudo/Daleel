@@ -14,14 +14,15 @@ description: >-
 # Publish content to Daleel (daleelconsult.org)
 
 This skill publishes one piece of content to the Daleel website by driving the
-site's own admin panel in a browser. The site has three publishable content
-types, and this skill handles all three from **one shared path** with small
+site's own admin panel in a browser. The site has four publishable content
+types, and this skill handles all four from **one shared path** with small
 per-type differences in which fields to collect.
 
-> **The three types (and where each lands):**
+> **The four types (and where each lands):**
 > - **Article** (مقال) → shows under the library's *Articles* section
 > - **Video** (فيديو) → shows under the library's *Videos* section
 > - **Book / booklet** (كتاب / كُتيّب) → shows under the library's *Booklets* section
+> - **Album photo** (صورة ألبوم المدير) → shows in the director's photo album (`/director/album`)
 
 ## ⚠️ Safety first — read before running
 
@@ -98,6 +99,10 @@ in one clean pass.
 - **Description** (`description`) — optional
 - **Document file** (`file`) — optional; PDF/DOC/DOCX
 
+### Album photo (صورة ألبوم المدير) — form at `<base URL>/admin/album/new`
+- ✱ **Image** (`image`) — required; PNG/JPG/WEBP/GIF
+- **Caption** (`caption`) — optional short text shown under the photo
+
 > **Why the field lists differ:** the three types are ~90% the same flow, but
 > each has its own required media — a book needs a cover, a video needs a source,
 > an article is mostly text. Collect only what its form actually accepts.
@@ -119,6 +124,7 @@ Publishing isn't done until you've *seen* it. After submitting:
    - Article → `<base URL>/library#articles`
    - Video → `<base URL>/library#videos`
    - Book → `<base URL>/library#booklets`
+   - Album photo → `<base URL>/director/album`
 2. Confirm the new entry is visible with the correct title and media.
 3. Report back to the user: what was published, its type, and the URL where it
    now appears. If it's missing, say so plainly and check for a validation error
@@ -131,6 +137,7 @@ Publishing isn't done until you've *seen* it. After submitting:
 | Article | `/admin/posts/new` | `POST /admin/posts` | title | `/library#articles` |
 | Video | `/admin/videos/new` | `POST /admin/videos` | title + (url or file) | `/library#videos` |
 | Book | `/admin/books/new` | `POST /admin/books` | title + cover | `/library#booklets` |
+| Album photo | `/admin/album/new` | `POST /admin/album` | image | `/director/album` |
 
 Allowed uploads: images `png/jpg/jpeg/webp/gif` · docs `pdf/doc/docx` ·
 video `mp4/webm/ogg/mov/m4v`.

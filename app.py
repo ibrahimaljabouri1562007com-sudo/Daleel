@@ -349,6 +349,35 @@ def init_db():
         """
     )
 
+    # ---- director photo album (مدير المركز) ----
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS album (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            image      TEXT NOT NULL,   -- path under static/
+            caption    TEXT,            -- optional caption
+            position   INTEGER,
+            created_at TEXT
+        )
+        """
+    )
+    # seed with the existing sample photos so the album isn't empty on first run
+    if conn.execute("SELECT COUNT(*) AS n FROM album").fetchone()["n"] == 0:
+        seed_album = [
+            "assets/img/IMG-2.png",
+            "assets/img/2147785631-r.jpg",
+            "assets/img/2148483874.jpg",
+            "assets/img/2149300712-r.jpg",
+            "assets/img/810-r5nujzk2.jpg",
+            "assets/img/article-teams.webp",
+        ]
+        now = datetime.utcnow().isoformat()
+        conn.executemany(
+            "INSERT INTO album (image, caption, position, created_at) "
+            "VALUES (?, NULL, ?, ?)",
+            [(img, i, now) for i, img in enumerate(seed_album, start=1)],
+        )
+
     conn.commit()
     conn.close()
 
@@ -385,6 +414,10 @@ def get_posts():
 
 def get_news():
     return _ordered("news")
+
+
+def get_album():
+    return _ordered("album")
 
 
 def next_position(table):
@@ -466,17 +499,8 @@ def director():
 
 @app.route("/director/album")
 def album():
-    # مدير المركز — ألبوم الصور. قائمة ثابتة الآن (صور عيّنة)؛ تُحوَّل لاحقًا
-    # إلى قاعدة البيانات مع لوحة المشرف إذا أردنا رفع الصور من الموقع.
-    photos = [
-        "assets/img/IMG-2.png",
-        "assets/img/2147785631-r.jpg",
-        "assets/img/2148483874.jpg",
-        "assets/img/2149300712-r.jpg",
-        "assets/img/810-r5nujzk2.jpg",
-        "assets/img/article-teams.webp",
-    ]
-    return render_template("album.html", photos=photos)
+    # مدير المركز — ألبوم الصور. تُدار من لوحة المشرف (إضافة/حذف/تبديل/ترتيب).
+    return render_template("album.html", photos=get_album())
 
 
 @app.route("/articles", methods=["GET", "POST"])
@@ -1096,6 +1120,88 @@ def news_delete(news_id):
         remove_upload(item["src"])
     flash("تم حذف الخبر.", "success")
     return redirect(url_for("home") + "#news")
+
+
+# ============================================================================
+#  DIRECTOR ALBUM (ألبوم مدير المركز) — add / delete / replace / reorder
+#  Same admin-form pattern as books; each entry is one image + optional caption.
+# ============================================================================
+@app.route("/admin/album/new")
+@admin_required
+def album_new():
+    return render_template("admin_album_new.html")
+
+
+@app.route("/admin/album", methods=["POST"])
+@admin_required
+def album_create():
+    caption = (request.form.get("caption") or "").strip()
+    image, err = take_upload("image", ALLOWED_IMAGE,
+                             "صيغة الصورة غير مدعومة. المقبول: PNG, JPG, WEBP, GIF.")
+    if err:
+        flash(err, "error"); return redirect(url_for("album_new"))
+    if not image:
+        flash("يجب اختيار صورة.", "error"); return redirect(url_for("album_new"))
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO album (image, caption, position, created_at) VALUES (?, ?, ?, ?)",
+        (image, caption, next_position("album"), datetime.utcnow().isoformat()),
+    )
+    conn.commit(); conn.close()
+    flash("تمت إضافة الصورة بنجاح.", "success")
+    return redirect(url_for("album"))
+
+
+@app.route("/admin/album/reorder", methods=["POST"])
+@admin_required
+def album_reorder():
+    return reorder_table("album")
+
+
+@app.route("/admin/album/<int:photo_id>/delete", methods=["POST"])
+@admin_required
+def album_delete(photo_id):
+    item = get_one("album", photo_id)
+    if item is None:
+        abort(404)
+    conn = get_db()
+    conn.execute("DELETE FROM album WHERE id = ?", (photo_id,))
+    conn.commit(); conn.close()
+    remove_upload(item["image"])  # uploads only; shared seed images are left alone
+    flash("تم حذف الصورة.", "success")
+    return redirect(url_for("album"))
+
+
+@app.route("/admin/album/<int:photo_id>/edit")
+@admin_required
+def album_edit(photo_id):
+    item = get_one("album", photo_id)
+    if item is None:
+        abort(404)
+    return render_template("admin_album_new.html", item=item,
+                           action=url_for("album_update", photo_id=photo_id))
+
+
+@app.route("/admin/album/<int:photo_id>", methods=["POST"])
+@admin_required
+def album_update(photo_id):
+    item = get_one("album", photo_id)
+    if item is None:
+        abort(404)
+    caption = (request.form.get("caption") or "").strip()
+    image, err = take_upload("image", ALLOWED_IMAGE,
+                             "صيغة الصورة غير مدعومة. المقبول: PNG, JPG, WEBP, GIF.")
+    if err:
+        flash(err, "error"); return redirect(url_for("album_edit", photo_id=photo_id))
+    new_image = item["image"]
+    if image:  # a new file replaces the old (leaving it empty keeps the current one)
+        remove_upload(item["image"]); new_image = image
+    conn = get_db()
+    conn.execute("UPDATE album SET image=?, caption=? WHERE id=?",
+                 (new_image, caption, photo_id))
+    conn.commit(); conn.close()
+    flash("تم تحديث الصورة.", "success")
+    return redirect(url_for("album"))
 
 
 # Ensure the database + all tables exist however the app is launched

@@ -8,21 +8,47 @@
     <div class="container"><h1>ألبوم صور مدير المركز</h1></div>
   </section>
 
-  <!-- ===== Album gallery ===== -->
-  <section class="section">
+  <!-- ===== Album gallery (admin-managed) ===== -->
+  <section id="album" class="section" data-editable>
     <div class="container">
-      <div class="section-head center-rule">
+      <div class="section-head sec-head center-rule">
         <h2 class="section-title">د. جمال الجبوري</h2>
+        {% if is_admin %}
+        <div class="edit-tools">
+          <button type="button" class="edit-toggle js-edit-toggle" aria-pressed="false">
+            <span class="edit-ic" aria-hidden="true">✎</span> <span class="edit-label">تعديل</span>
+          </button>
+          <a href="{{ url_for('album_new') }}" class="add-book-btn js-add" title="إضافة صورة">
+            <span class="add-plus" aria-hidden="true">＋</span> إضافة صورة
+          </a>
+        </div>
+        {% endif %}
       </div>
+      {% if is_admin %}<p class="edit-hint">وضع التعديل مُفعّل — اسحب الصور لإعادة ترتيبها، أو استبدل، أو احذف، أو أضِف صورة.</p>{% endif %}
 
-      <div class="album-grid">
+      {% if photos %}
+      <div class="album-grid js-grid" data-reorder-url="{{ url_for('album_reorder') }}">
         {% for photo in photos %}
-        <figure class="album-item">
-          <img src="{{ url_for('static', filename=photo) }}"
-               alt="صورة من ألبوم د. جمال الجبوري" loading="lazy" />
+        <figure class="album-item js-card" data-id="{{ photo.id }}">
+          {% if is_admin %}<span class="drag-handle" aria-hidden="true" title="اسحب لإعادة الترتيب">⠿</span>{% endif %}
+          <img class="js-lightbox" src="{{ url_for('static', filename=photo.image) }}"
+               alt="{{ photo.caption or 'صورة من ألبوم د. جمال الجبوري' }}" loading="lazy" />
+          {% if photo.caption %}<figcaption class="album-cap">{{ photo.caption }}</figcaption>{% endif %}
+          {% if is_admin %}
+          <div class="card-admin">
+            <a class="book-edit js-modify" href="{{ url_for('album_edit', photo_id=photo.id) }}"><span aria-hidden="true">✎</span> استبدال</a>
+            <form class="book-del-form js-del" action="{{ url_for('album_delete', photo_id=photo.id) }}" method="post"
+                  onsubmit="return confirm('هل أنت متأكد من حذف هذه الصورة؟ لا يمكن التراجع عن هذا الإجراء.');">
+              <button type="submit" class="book-del" aria-label="حذف الصورة"><span aria-hidden="true">🗑</span> حذف</button>
+            </form>
+          </div>
+          {% endif %}
         </figure>
         {% endfor %}
       </div>
+      {% else %}
+      <p class="album-empty">لا توجد صور في الألبوم بعد.</p>
+      {% endif %}
 
       <div class="album-actions">
         <a href="{{ url_for('home') }}#team" class="dir-cv">← رجوع</a>

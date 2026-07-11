@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% set active = '' %}
+{% block title %}{{ 'استبدال صورة' if item else 'إضافة صورة للألبوم' }} – مركز الدليل{% endblock %}
+{% block desc %}لوحة النشر: إضافة أو استبدال صورة في ألبوم مدير المركز.{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container"><h1>{{ 'استبدال صورة' if item else 'إضافة صورة للألبوم' }}</h1></div>
+  </section>
+
+  <main class="admin-wrap">
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, msg in messages %}
+          <div class="flash flash-{{ category }}" role="alert">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+      <form class="book-form" action="{{ action or url_for('album_create') }}" method="post" enctype="multipart/form-data">
+        <p class="form-note">الحقول المعلَّمة بـ <span class="req">*</span> إلزامية.</p>
+
+        <label class="field">
+          <span class="field-label">الصورة {% if not item %}<span class="req">*</span>{% endif %}</span>
+          {% if item and item.image %}<img class="current-thumb" src="{{ url_for('static', filename=item.image) }}" alt="الصورة الحالية" />{% endif %}
+          <input type="file" name="image" accept="image/*" {% if not item %}required{% endif %} />
+          <span class="field-hint">{% if item %}اترك الحقل فارغًا للإبقاء على الصورة الحالية. {% endif %}صيغ مقبولة: PNG, JPG, WEBP, GIF</span>
+        </label>
+
+        <label class="field">
+          <span class="field-label">تعليق على الصورة</span>
+          <input type="text" name="caption" maxlength="200" value="{{ item.caption if item else '' }}" placeholder="تعليق مختصر يظهر أسفل الصورة (اختياري)" />
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-publish">{{ 'حفظ التعديلات' if item else 'إضافة الصورة' }}</button>
+          <a href="{{ url_for('album') }}" class="btn-cancel">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </main>
+{% endblock %}

@@ -358,6 +358,49 @@
 })();
 
 /* ============================================================
+   Album lightbox — click a photo to view it full-screen, with
+   prev/next, Esc/backdrop to close. Disabled while a tile is in
+   edit mode (so admin drag/manage isn't hijacked).
+   ============================================================ */
+(function () {
+  var imgs = [].slice.call(document.querySelectorAll('.js-lightbox'));
+  if (!imgs.length) return;
+
+  var srcs = imgs.map(function (im) { return im.getAttribute('src'); });
+  var ov = document.createElement('div');
+  ov.className = 'lightbox';
+  ov.innerHTML =
+    '<button class="lb-close" aria-label="إغلاق">✕</button>' +
+    '<button class="lb-prev" aria-label="السابق">‹</button>' +
+    '<img class="lb-img" alt="" />' +
+    '<button class="lb-next" aria-label="التالي">›</button>';
+  document.body.appendChild(ov);
+  var lbImg = ov.querySelector('.lb-img');
+  var idx = 0;
+
+  function show(i) { idx = (i + srcs.length) % srcs.length; lbImg.src = srcs[idx]; }
+  function open(i) { show(i); ov.classList.add('open'); document.body.classList.add('lb-lock'); }
+  function close() { ov.classList.remove('open'); document.body.classList.remove('lb-lock'); }
+
+  imgs.forEach(function (img, i) {
+    img.addEventListener('click', function () {
+      if (img.closest('.editing')) return;                 // let admin drag/manage instead
+      open(i);
+    });
+  });
+  ov.querySelector('.lb-close').addEventListener('click', close);
+  ov.querySelector('.lb-prev').addEventListener('click', function () { show(idx - 1); });
+  ov.querySelector('.lb-next').addEventListener('click', function () { show(idx + 1); });
+  ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (!ov.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowLeft') show(idx + 1);          // RTL: left = next
+    else if (e.key === 'ArrowRight') show(idx - 1);
+  });
+})();
+
+/* ============================================================
    Article formatting toolbar — inserts simple markup into the
    body textarea (wraps selection for bold/highlight; prefixes
    the line for heading/quote/list). Rendered server-side.
