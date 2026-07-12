@@ -257,6 +257,9 @@ def init_db():
             ("توظيف أوامر الذكاء الاصطناعي في المشروعات الإنسانية", "assets/img/book-2.jpg"),
             ("تقييم المشروعات الإنسانية", "assets/img/book-1.jpg"),
             ("إدارة المخاطر الأمنية أثناء التدخل الإنساني", "assets/img/book-4.jpg"),
+            ("الاستثمار الاجتماعي المؤثر في العمل التنموي العربي", "assets/img/book-impact-investment.png"),
+            ("١٤ خطوة لاستثمار اجتماعي ناجح", "assets/img/book-14-steps.jpg"),
+            ("دليل تقدير احتياجات المستفيدين من خدمات الجمعيات الخيرية", "assets/img/book-needs-assessment.jpg"),
         ]
         now = datetime.utcnow().isoformat()
         conn.executemany(
