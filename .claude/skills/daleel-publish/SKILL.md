@@ -1,27 +1,28 @@
 ---
 name: daleel-publish
 description: >-
-  Publish new content — an article, a video, or a book/booklet — to the Daleel
-  center website (daleelconsult.org). Drives the site's admin panel through the
-  browser: logs in as admin, opens the right "add" form, fills the fields, submits,
-  and confirms the new entry is live. Use this whenever the user wants to publish,
-  post, add, or upload a book, booklet, video, lesson, or article to Daleel /
-  مركز الدليل / daleelconsult.org — even if they don't say the word "admin" or name
-  the exact section. If the user just says "add this to the site" or "انشر" in the
-  Daleel context, this is the skill.
+  Publish new content — an article, a video, a book/booklet, or a downloadable
+  tool/template — to the Daleel center website (daleelconsult.org). Drives the
+  site's admin panel through the browser: logs in as admin, opens the right "add"
+  form, fills the fields, submits, and confirms the new entry is live. Use this
+  whenever the user wants to publish, post, add, or upload a book, booklet, video,
+  lesson, article, tool, or template to Daleel / مركز الدليل / daleelconsult.org —
+  even if they don't say the word "admin" or name the exact section. If the user
+  just says "add this to the site" or "انشر" in the Daleel context, this is the skill.
 ---
 
 # Publish content to Daleel (daleelconsult.org)
 
 This skill publishes one piece of content to the Daleel website by driving the
-site's own admin panel in a browser. The site has four publishable content
-types, and this skill handles all four from **one shared path** with small
+site's own admin panel in a browser. The site has five publishable content
+types, and this skill handles all five from **one shared path** with small
 per-type differences in which fields to collect.
 
-> **The four types (and where each lands):**
+> **The five types (and where each lands):**
 > - **Article** (مقال) → shows under the library's *Articles* section
 > - **Video** (فيديو) → shows under the library's *Videos* section
 > - **Book / booklet** (كتاب / كُتيّب) → shows under the library's *Booklets* section
+> - **Tool / template** (أداة / نموذج) → shows under the library's *Tools & templates* section
 > - **Album photo** (صورة ألبوم المدير) → shows in the director's photo album (`/director/album`)
 
 ## ⚠️ Safety first — read before running
@@ -99,13 +100,20 @@ in one clean pass.
 - **Description** (`description`) — optional
 - **Document file** (`file`) — optional; PDF/DOC/DOCX
 
+### Tool / template (أداة / نموذج) — form at `<base URL>/admin/tools/new`
+- ✱ **Title** (`title`)
+- ✱ **Download file** (`file`) — required; PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/CSV/TXT/ZIP/RAR
+- **Description** (`description`) — optional
+- **Cover / icon** (`cover`) — optional image; PNG/JPG/WEBP/GIF (a default 🧰 icon shows if omitted)
+
 ### Album photo (صورة ألبوم المدير) — form at `<base URL>/admin/album/new`
 - ✱ **Image** (`image`) — required; PNG/JPG/WEBP/GIF
 - **Caption** (`caption`) — optional short text shown under the photo
 
-> **Why the field lists differ:** the three types are ~90% the same flow, but
-> each has its own required media — a book needs a cover, a video needs a source,
-> an article is mostly text. Collect only what its form actually accepts.
+> **Why the field lists differ:** the types are ~90% the same flow, but each has
+> its own required media — a book needs a cover, a video needs a source, a tool
+> needs a download file, an article is mostly text. Collect only what its form
+> actually accepts.
 
 ## Step 4 — Fill the form and submit
 
@@ -124,6 +132,7 @@ Publishing isn't done until you've *seen* it. After submitting:
    - Article → `<base URL>/library#articles`
    - Video → `<base URL>/library#videos`
    - Book → `<base URL>/library#booklets`
+   - Tool / template → `<base URL>/library#tools`
    - Album photo → `<base URL>/director/album`
 2. Confirm the new entry is visible with the correct title and media.
 3. Report back to the user: what was published, its type, and the URL where it
@@ -137,7 +146,9 @@ Publishing isn't done until you've *seen* it. After submitting:
 | Article | `/admin/posts/new` | `POST /admin/posts` | title | `/library#articles` |
 | Video | `/admin/videos/new` | `POST /admin/videos` | title + (url or file) | `/library#videos` |
 | Book | `/admin/books/new` | `POST /admin/books` | title + cover | `/library#booklets` |
+| Tool / template | `/admin/tools/new` | `POST /admin/tools` | title + file | `/library#tools` |
 | Album photo | `/admin/album/new` | `POST /admin/album` | image | `/director/album` |
 
 Allowed uploads: images `png/jpg/jpeg/webp/gif` · docs `pdf/doc/docx` ·
+tool files `pdf/doc/docx/xls/xlsx/ppt/pptx/csv/txt/zip/rar` ·
 video `mp4/webm/ogg/mov/m4v`.

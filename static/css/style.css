@@ -384,6 +384,7 @@ body.lb-lock{overflow:hidden}
 .book-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}
 .book-card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
 .book-cover{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center;background:#f4f5f1;display:block}
+.book-cover.tool-ph{display:grid;place-items:center;font-size:56px;background:var(--bg-alt);color:var(--green)}
 .book-title{padding:14px 15px 18px;font-size:13.5px;font-weight:700;color:var(--green-900);line-height:1.65;text-align:center;margin-top:auto}
 .books-grid+.lib-cta{margin-top:46px}
 @media (max-width:900px){ .books-grid{grid-template-columns:repeat(2,1fr);gap:20px} }

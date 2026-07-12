@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% set active = 'library' %}
+{% block title %}{{ 'تعديل أداة/نموذج' if item else 'إضافة أداة أو نموذج' }} – مركز الدليل{% endblock %}
+{% block desc %}لوحة النشر: إضافة أو تعديل أداة أو نموذج قابل للتحميل في المكتبة الرقمية.{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container"><h1>{{ 'تعديل أداة/نموذج' if item else 'إضافة أداة أو نموذج' }}</h1></div>
+  </section>
+
+  <main class="admin-wrap">
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, msg in messages %}
+          <div class="flash flash-{{ category }}" role="alert">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+      <form class="book-form" action="{{ action or url_for('tool_create') }}" method="post" enctype="multipart/form-data">
+        <p class="form-note">الحقول المعلَّمة بـ <span class="req">*</span> إلزامية.</p>
+
+        <label class="field">
+          <span class="field-label">عنوان الأداة أو النموذج <span class="req">*</span></span>
+          <input type="text" name="title" required maxlength="200" value="{{ item.title if item else '' }}" placeholder="مثال: نموذج خطة تنفيذ مشروع" />
+        </label>
+
+        <label class="field">
+          <span class="field-label">نبذة مختصرة</span>
+          <textarea name="description" rows="4" maxlength="600" placeholder="وصف مختصر يظهر أسفل العنوان (اختياري)">{{ item.description if item else '' }}</textarea>
+        </label>
+
+        <label class="field">
+          <span class="field-label">ملف التحميل {% if not item %}<span class="req">*</span>{% endif %}</span>
+          {% if item and item.file %}<span class="current-file">الملف الحالي مرفق ✓</span>{% endif %}
+          <input type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.zip,.rar" {% if not item %}required{% endif %} />
+          <span class="field-hint">{% if item %}اترك الحقل فارغًا للإبقاء على الملف الحالي. {% endif %}صيغ مقبولة: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, CSV, TXT, ZIP, RAR</span>
+        </label>
+
+        <div class="field">
+          <span class="field-label">صورة/أيقونة (اختياري)</span>
+          {% if item and item.cover %}
+            <img class="current-thumb" src="{{ url_for('static', filename=item.cover) }}" alt="الأيقونة الحالية" />
+            <label class="remove-check"><input type="checkbox" name="remove_cover" value="1" /> احذف الصورة الحالية</label>
+          {% endif %}
+          <input type="file" name="cover" accept="image/*" />
+          <span class="field-hint">{% if item %}لتغييرها ارفع صورة جديدة، أو حدّد «احذف» لإزالتها، أو اتركها كما هي. {% endif %}تظهر أعلى البطاقة؛ إن تُركت فارغة تُعرض أيقونة افتراضية. صيغ: PNG, JPG, WEBP, GIF</span>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-publish">{{ 'حفظ التعديلات' if item else 'إضافة الأداة' }}</button>
+          <a href="{{ url_for('library') }}#tools" class="btn-cancel">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </main>
+{% endblock %}

@@ -203,14 +203,57 @@
     </div>
   </section>
 
-  <!-- ===== Tools & templates (not editable yet) ===== -->
-  <section id="tools" class="lib-section section-alt">
+  <!-- ===== Tools & templates (admin-managed) ===== -->
+  <section id="tools" class="lib-section section-alt" data-editable>
     <div class="container">
-      <div class="section-head"><h2 class="section-title">أدوات ونماذج قابلة للتحميل</h2></div>
+      <div class="section-head sec-head">
+        <h2 class="section-title">أدوات ونماذج قابلة للتحميل</h2>
+        {% if is_admin %}
+        <div class="edit-tools">
+          <button type="button" class="edit-toggle js-edit-toggle" aria-pressed="false">
+            <span class="edit-ic" aria-hidden="true">✎</span> <span class="edit-label">تعديل</span>
+          </button>
+          <a href="{{ url_for('tool_new') }}" class="add-book-btn js-add" title="إضافة أداة أو نموذج جديد">
+            <span class="add-plus" aria-hidden="true">＋</span> إضافة أداة
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% if is_admin %}<p class="edit-hint">وضع التعديل مُفعّل — اسحب البطاقات لإعادة ترتيبها، أو عدّل، أو احذف، أو أضِف أداة.</p>{% endif %}
+
+      {% if tools %}
+      <div class="books-grid js-grid" data-reorder-url="{{ url_for('tool_reorder') }}">
+        {% for t in tools %}
+        <article class="book-card js-card" data-id="{{ t.id }}">
+          {% if is_admin %}<span class="drag-handle" aria-hidden="true" title="اسحب لإعادة الترتيب">⠿</span>{% endif %}
+          {% if t.cover %}
+            <img class="book-cover" src="{{ url_for('static', filename=t.cover) }}" alt="{{ t.title }}" loading="lazy" />
+          {% else %}
+            <div class="book-cover tool-ph" aria-hidden="true">🧰</div>
+          {% endif %}
+          <h3 class="book-title">{{ t.title }}</h3>
+          {% if t.description %}<p class="book-desc">{{ t.description }}</p>{% endif %}
+          {% if t.file %}<a class="book-dl" href="{{ url_for('static', filename=t.file) }}" download>تحميل <span aria-hidden="true">↓</span></a>{% endif %}
+          {% if is_admin %}
+          <div class="card-admin">
+            <a class="book-edit js-modify" href="{{ url_for('tool_edit', tool_id=t.id) }}"><span aria-hidden="true">✎</span> تعديل</a>
+            <form class="book-del-form js-del" action="{{ url_for('tool_delete', tool_id=t.id) }}" method="post"
+                  onsubmit="return confirm('هل أنت متأكد من حذف «{{ t.title }}»؟ لا يمكن التراجع عن هذا الإجراء.');">
+              <button type="submit" class="book-del" aria-label="حذف الأداة">
+                <span aria-hidden="true">🗑</span> حذف
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
       <div class="lib-empty">
         <div class="lib-empty-ic">🧰</div>
         <p>لم تُرفع أدوات أو نماذج بعد — ترقّبوا جديدنا قريبًا.</p>
       </div>
+      {% endif %}
     </div>
   </section>
 {% endblock %}

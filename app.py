@@ -39,6 +39,9 @@ UPLOAD_DIR = os.environ.get("UPLOAD_DIR") or os.path.join(BASE_DIR, "static", "u
 ALLOWED_IMAGE = {"png", "jpg", "jpeg", "webp", "gif"}
 ALLOWED_DOC = {"pdf", "doc", "docx"}
 ALLOWED_VIDEO = {"mp4", "webm", "ogg", "mov", "m4v"}
+# downloadable tools/templates accept a wider set (spreadsheets, slides, archives)
+ALLOWED_TOOL = {"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+                "csv", "txt", "zip", "rar"}
 
 app = Flask(__name__)
 # signs the session cookie + flash messages. Set a strong value via env in prod.
@@ -381,6 +384,23 @@ def init_db():
             [(img, i, now) for i, img in enumerate(seed_album, start=1)],
         )
 
+    # ---- downloadable tools & templates (أدوات ونماذج) shelf ----
+    # Same admin-form pattern as books: title + optional cover + a download file.
+    # No seed — the section starts empty (as it does now) until an admin adds one.
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tools (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            title       TEXT NOT NULL,
+            description TEXT,
+            cover       TEXT,          -- optional icon/cover (path under static/)
+            file        TEXT,          -- the downloadable file (path under static/)
+            position    INTEGER,       -- display order (drag-to-reorder)
+            created_at  TEXT
+        )
+        """
+    )
+
     conn.commit()
     conn.close()
 
@@ -421,6 +441,10 @@ def get_news():
 
 def get_album():
     return _ordered("album")
+
+
+def get_tools():
+    return _ordered("tools")
 
 
 def next_position(table):
@@ -529,6 +553,7 @@ def library():
         books=get_books(),
         videos=get_videos(),
         posts=get_posts(),
+        tools=get_tools(),
     )
 
 
@@ -1205,6 +1230,125 @@ def album_update(photo_id):
     conn.commit(); conn.close()
     flash("تم تحديث الصورة.", "success")
     return redirect(url_for("album"))
+
+
+# ============================================================================
+#  TOOLS & TEMPLATES (أدوات ونماذج قابلة للتحميل) — add / edit / delete / reorder
+#  Same admin-form pattern as books: title + optional cover + a download file.
+#  The download file is the point of this section, so it is the required media.
+# ============================================================================
+@app.route("/admin/tools/new")
+@admin_required
+def tool_new():
+    """Show the add-a-tool form (the '+' leads here)."""
+    return render_template("admin_tool_new.html")
+
+
+@app.route("/admin/tools", methods=["POST"])
+@admin_required
+def tool_create():
+    title = (request.form.get("title") or "").strip()
+    description = (request.form.get("description") or "").strip()
+    if not title:
+        flash("يجب إدخال عنوان للأداة أو النموذج.", "error")
+        return redirect(url_for("tool_new"))
+
+    doc, err = take_upload(
+        "file", ALLOWED_TOOL,
+        "صيغة الملف غير مدعومة. المقبول: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, CSV, TXT, ZIP, RAR.")
+    if err:
+        flash(err, "error"); return redirect(url_for("tool_new"))
+    if not doc:
+        flash("يجب إرفاق ملف للتحميل.", "error")
+        return redirect(url_for("tool_new"))
+
+    cover, err = take_upload(
+        "cover", ALLOWED_IMAGE,
+        "صيغة صورة الأيقونة غير مدعومة. المقبول: PNG, JPG, WEBP, GIF.")
+    if err:
+        flash(err, "error"); return redirect(url_for("tool_new"))
+
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO tools (title, description, cover, file, position, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (title, description, cover, doc, next_position("tools"),
+         datetime.utcnow().isoformat()),
+    )
+    conn.commit(); conn.close()
+    flash("تمت إضافة الأداة بنجاح.", "success")
+    return redirect(url_for("library") + "#tools")
+
+
+@app.route("/admin/tools/<int:tool_id>/edit")
+@admin_required
+def tool_edit(tool_id):
+    item = get_one("tools", tool_id)
+    if item is None:
+        abort(404)
+    return render_template("admin_tool_new.html", item=item,
+                           action=url_for("tool_update", tool_id=tool_id))
+
+
+@app.route("/admin/tools/<int:tool_id>", methods=["POST"])
+@admin_required
+def tool_update(tool_id):
+    item = get_one("tools", tool_id)
+    if item is None:
+        abort(404)
+    title = (request.form.get("title") or "").strip()
+    description = (request.form.get("description") or "").strip()
+    if not title:
+        flash("يجب إدخال عنوان للأداة أو النموذج.", "error")
+        return redirect(url_for("tool_edit", tool_id=tool_id))
+    doc, err = take_upload(
+        "file", ALLOWED_TOOL,
+        "صيغة الملف غير مدعومة. المقبول: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, CSV, TXT, ZIP, RAR.")
+    if err:
+        flash(err, "error"); return redirect(url_for("tool_edit", tool_id=tool_id))
+    cover, err = take_upload(
+        "cover", ALLOWED_IMAGE,
+        "صيغة صورة الأيقونة غير مدعومة. المقبول: PNG, JPG, WEBP, GIF.")
+    if err:
+        flash(err, "error"); return redirect(url_for("tool_edit", tool_id=tool_id))
+    # a new file replaces the old (leaving the field empty keeps the current one)
+    new_file = item["file"]
+    if doc:
+        remove_upload(item["file"]); new_file = doc
+    # cover: remove (checkbox) > replace (new upload) > keep
+    new_cover = item["cover"]
+    if request.form.get("remove_cover"):
+        remove_upload(item["cover"]); new_cover = None
+    elif cover:
+        remove_upload(item["cover"]); new_cover = cover
+    conn = get_db()
+    conn.execute("UPDATE tools SET title=?, description=?, cover=?, file=? WHERE id=?",
+                 (title, description, new_cover, new_file, tool_id))
+    conn.commit(); conn.close()
+    flash("تم تحديث الأداة.", "success")
+    return redirect(url_for("library") + "#tools")
+
+
+@app.route("/admin/tools/reorder", methods=["POST"])
+@admin_required
+def tool_reorder():
+    return reorder_table("tools")
+
+
+@app.route("/admin/tools/<int:tool_id>/delete", methods=["POST"])
+@admin_required
+def tool_delete(tool_id):
+    item = get_one("tools", tool_id)
+    if item is None:
+        abort(404)
+    conn = get_db()
+    conn.execute("DELETE FROM tools WHERE id = ?", (tool_id,))
+    conn.commit(); conn.close()
+    # tidy the disk (uploads only; shared seed images are left alone)
+    remove_upload(item["cover"])
+    remove_upload(item["file"])
+    flash("تم حذف الأداة.", "success")
+    return redirect(url_for("library") + "#tools")
 
 
 # Ensure the database + all tables exist however the app is launched
